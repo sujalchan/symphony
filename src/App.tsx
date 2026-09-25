@@ -13,6 +13,14 @@ function App() {
 
   useEffect(() => {
     if (!isTauri()) return;
+
+    const preventContextMenu = (event: MouseEvent) => event.preventDefault();
+    document.addEventListener("contextmenu", preventContextMenu, true);
+    return () => document.removeEventListener("contextmenu", preventContextMenu, true);
+  }, []);
+
+  useEffect(() => {
+    if (!isTauri()) return;
     void getCurrentWindow().setMinimizable(!isFullscreen);
   }, [isFullscreen]);
 
