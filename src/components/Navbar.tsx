@@ -7,18 +7,11 @@ function isInteractiveTarget(event: MouseEvent<HTMLElement>) {
         event.target.closest("button, a, input, select, textarea, [role='button']") !== null;
 }
 
-type NavbarProps = {
-    isFullscreen: boolean;
-    onFullscreenChange: (fullscreen: boolean) => void;
-};
-
-export default function Navbar({ isFullscreen, onFullscreenChange }: NavbarProps) {
+export default function Navbar() {
     const window = getCurrentWindow();
 
     async function toggleFullscreen() {
-        const fullscreen = !(await window.isFullscreen());
-        await window.setFullscreen(fullscreen);
-        onFullscreenChange(fullscreen);
+        await window.setFullscreen(!(await window.isFullscreen()));
     }
 
     return (
@@ -56,7 +49,6 @@ export default function Navbar({ isFullscreen, onFullscreenChange }: NavbarProps
 
             <div className="navbar-right">
                 <div className="window-controls">
-
                     <button
                         className="window-control fullscreen-control"
                         type="button"
@@ -67,10 +59,7 @@ export default function Navbar({ isFullscreen, onFullscreenChange }: NavbarProps
                         className="window-control minimize-control"
                         type="button"
                         aria-label="Minimize window"
-                        disabled={isFullscreen}
-                        onClick={async () => {
-                            if (!(await window.isFullscreen())) await window.minimize();
-                        }}
+                        onClick={() => window.minimize()}
                     />
                     <button
                         className="window-control close-control"
@@ -78,7 +67,6 @@ export default function Navbar({ isFullscreen, onFullscreenChange }: NavbarProps
                         aria-label="Close window"
                         onClick={() => window.close()}
                     />
-
                 </div>
             </div>
         </nav>
