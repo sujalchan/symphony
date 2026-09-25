@@ -40,8 +40,8 @@ export default function Navbar({ isFullscreen, onFullscreenChange }: NavbarProps
                     <button className="menu-button">File</button>
 
                     <div className="dropdown-content">
-                        <button>New Project</button>
-                        <button>Load Project</button>
+                        <button>New .sb3</button>
+                        <button>Load .sb3</button>
                     </div>
                 </div>
 
