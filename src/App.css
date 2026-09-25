@@ -39,18 +39,8 @@ body {
   box-sizing: border-box;
 }
 
-.canvas {
-  height: calc(100vh - 40px);
+.app-content {
+  height: calc(100% - 40px);
   margin-top: 40px;
-  overflow: hidden;
-  background-color: #242424;
-  background-image: radial-gradient(circle, #575757 1px, transparent 1.4px);
-  background-size: 24px 24px;
-  cursor: grab;
-  touch-action: none;
-  user-select: none;
-}
-
-.canvas.is-panning {
-  cursor: grabbing;
+  padding: 12px;
 }
