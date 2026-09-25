@@ -1,7 +1,3 @@
-# Tauri + React + Typescript
+# Symphony
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
-
-## Recommended IDE Setup
-
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+Symphony is a experimental Scratch to Rust transpiler. It aims to convert Scratch code to Rust in order to run projects such as rasterizers and rendering engines made in Scratch much faster than through Scratch's VM.
