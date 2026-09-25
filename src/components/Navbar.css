@@ -161,7 +161,10 @@
     display: block;
 }
 
-.dropdown-content button {
+.dropdown-content button,
+.dropdown-content a {
+    display: block;
+    text-decoration: none;
     width: 100%;
 
     border: none;
@@ -183,7 +186,9 @@
 }
 
 .dropdown-content button:hover,
-.dropdown-content button:focus-visible {
+.dropdown-content button:focus-visible,
+.dropdown-content a:hover,
+.dropdown-content a:focus-visible {
     background: var(--hover);
     color: var(--text-strong);
 }

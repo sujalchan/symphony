@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import type { MouseEvent } from "react";
 import "./Navbar.css";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { isTauri } from "@tauri-apps/api/core";
+import { openUrl } from "@tauri-apps/plugin-opener";
 
 function isInteractiveTarget(event: MouseEvent<HTMLElement>) {
     return event.target instanceof Element &&
@@ -17,7 +19,7 @@ type NavbarProps = {
 
 export default function Navbar({ isFullscreen, onFullscreenChange, theme, onThemeToggle }: NavbarProps) {
     const window = getCurrentWindow();
-    const [openMenu, setOpenMenu] = useState<"file" | "project" | "window" | null>(null);
+    const [openMenu, setOpenMenu] = useState<"file" | "project" | "window" | "help" | null>(null);
     const activeDropdown = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -84,6 +86,25 @@ export default function Navbar({ isFullscreen, onFullscreenChange, theme, onThem
                         <button type="button" onClick={onThemeToggle}>
                             {theme === "dark" ? "Light mode" : "Dark mode"}
                         </button>
+                    </div>
+                </div>
+                <div className="dropdown" ref={openMenu === "help" ? activeDropdown : null}>
+                    <button className="menu-button" aria-expanded={openMenu === "help"} aria-controls="help-dropdown" onClick={() => setOpenMenu(openMenu === "help" ? null : "help")}>Help</button>
+
+                    <div id="help-dropdown" className="dropdown-content" hidden={openMenu !== "help"} onClick={() => setOpenMenu(null)}>
+                        <a
+                            href="https://github.com/sujalchan/symphony"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(event) => {
+                                if (isTauri()) {
+                                    event.preventDefault();
+                                    void openUrl(event.currentTarget.href);
+                                }
+                            }}
+                        >
+                            Project GitHub
+                        </a>
                     </div>
                 </div>
             </div>
