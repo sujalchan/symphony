@@ -2,10 +2,10 @@
   width: 100%;
   height: 100%;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border);
   overflow: hidden;
-  background-color: #1b1b1b;
-  background-image: radial-gradient(circle, #575757 1px, transparent 1.4px);
+  background-color: var(--grid-bg);
+  background-image: radial-gradient(circle, var(--grid-dot) 1px, transparent 1.4px);
   background-size: 24px 24px;
   cursor: grab;
   touch-action: none;

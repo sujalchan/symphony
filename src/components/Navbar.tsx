@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import type { MouseEvent } from "react";
 import "./Navbar.css";
 import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -10,10 +11,34 @@ function isInteractiveTarget(event: MouseEvent<HTMLElement>) {
 type NavbarProps = {
     isFullscreen: boolean;
     onFullscreenChange: (isFullscreen: boolean) => void;
+    theme: "dark" | "light";
+    onThemeToggle: () => void;
 };
 
-export default function Navbar({ isFullscreen, onFullscreenChange }: NavbarProps) {
+export default function Navbar({ isFullscreen, onFullscreenChange, theme, onThemeToggle }: NavbarProps) {
     const window = getCurrentWindow();
+    const [openMenu, setOpenMenu] = useState<"file" | "project" | "window" | null>(null);
+    const activeDropdown = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        function closeOutside(event: globalThis.PointerEvent) {
+            if (event.target instanceof Node && !activeDropdown.current?.contains(event.target)) {
+                setOpenMenu(null);
+            }
+        }
+        function closeOnEscape(event: KeyboardEvent) {
+            if (event.key === "Escape") {
+                activeDropdown.current?.querySelector("button")?.focus();
+                setOpenMenu(null);
+            }
+        }
+        document.addEventListener("pointerdown", closeOutside, true);
+        document.addEventListener("keydown", closeOnEscape);
+        return () => {
+            document.removeEventListener("pointerdown", closeOutside, true);
+            document.removeEventListener("keydown", closeOnEscape);
+        };
+    }, []);
 
     async function toggleFullscreen() {
         const fullscreen = !(await window.isFullscreen());
@@ -36,20 +61,29 @@ export default function Navbar({ isFullscreen, onFullscreenChange }: NavbarProps
             }}
         >
             <div className="navbar-left">
-                <div className="dropdown">
-                    <button className="menu-button">File</button>
+                <div className="dropdown" ref={openMenu === "file" ? activeDropdown : null}>
+                    <button className="menu-button" aria-expanded={openMenu === "file"} aria-controls="file-dropdown" onClick={() => setOpenMenu(openMenu === "file" ? null : "file")}>File</button>
 
-                    <div className="dropdown-content">
+                    <div id="file-dropdown" className="dropdown-content" hidden={openMenu !== "file"} onClick={() => setOpenMenu(null)}>
                         <button>New .sb3</button>
                         <button>Load .sb3</button>
                     </div>
                 </div>
 
-                <div className="dropdown">
-                    <button className="menu-button">Project</button>
+                <div className="dropdown" ref={openMenu === "project" ? activeDropdown : null}>
+                    <button className="menu-button" aria-expanded={openMenu === "project"} aria-controls="project-dropdown" onClick={() => setOpenMenu(openMenu === "project" ? null : "project")}>Project</button>
 
-                    <div className="dropdown-content">
+                    <div id="project-dropdown" className="dropdown-content" hidden={openMenu !== "project"} onClick={() => setOpenMenu(null)}>
                         <button>Project Settings</button>
+                    </div>
+                </div>
+                <div className="dropdown" ref={openMenu === "window" ? activeDropdown : null}>
+                    <button className="menu-button" aria-expanded={openMenu === "window"} aria-controls="window-dropdown" onClick={() => setOpenMenu(openMenu === "window" ? null : "window")}>Window</button>
+
+                    <div id="window-dropdown" className="dropdown-content" hidden={openMenu !== "window"} onClick={() => setOpenMenu(null)}>
+                        <button type="button" onClick={onThemeToggle}>
+                            {theme === "dark" ? "Light mode" : "Dark mode"}
+                        </button>
                     </div>
                 </div>
             </div>

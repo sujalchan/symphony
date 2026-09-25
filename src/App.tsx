@@ -6,6 +6,23 @@ import Navbar from "./components/Navbar";
 import "./App.css";
 
 function App() {
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    try {
+      return localStorage.getItem("symphony-theme") === "light" ? "light" : "dark";
+    } catch {
+      return "dark";
+    }
+  });
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    try {
+      localStorage.setItem("symphony-theme", theme);
+    } catch {
+      // Keep theme switching available when storage is unavailable.
+    }
+  }, [theme]);
+
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
@@ -54,7 +71,7 @@ function App() {
 
   return (
     <>
-      <Navbar isFullscreen={isFullscreen} onFullscreenChange={setIsFullscreen} />
+      <Navbar isFullscreen={isFullscreen} onFullscreenChange={setIsFullscreen} theme={theme} onThemeToggle={() => setTheme(theme === "dark" ? "light" : "dark")} />
 
       <main className="app-content">
         <Grid />
