@@ -20,7 +20,29 @@ type NavbarProps = {
 export default function Navbar({ isFullscreen, onFullscreenChange, theme, onThemeToggle }: NavbarProps) {
     const window = getCurrentWindow();
     const [openMenu, setOpenMenu] = useState<"file" | "project" | "window" | "help" | null>(null);
+    const [navbarVisible, setNavbarVisible] = useState(false);
     const activeDropdown = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!isFullscreen) {
+            setNavbarVisible(false);
+            return;
+        }
+
+        function revealAtTop(event: globalThis.PointerEvent) {
+            if (event.pointerType !== "mouse") return;
+            if (event.clientY <= 12) {
+                setNavbarVisible(true);
+            } else if (event.clientY > 48 &&
+                !(event.target instanceof Element && event.target.closest(".navbar"))) {
+                setNavbarVisible(false);
+                setOpenMenu(null);
+            }
+        }
+
+        document.addEventListener("pointermove", revealAtTop);
+        return () => document.removeEventListener("pointermove", revealAtTop);
+    }, [isFullscreen]);
 
     useEffect(() => {
         function closeOutside(event: globalThis.PointerEvent) {
@@ -45,12 +67,26 @@ export default function Navbar({ isFullscreen, onFullscreenChange, theme, onThem
     async function toggleFullscreen() {
         const fullscreen = !(await window.isFullscreen());
         await window.setFullscreen(fullscreen);
+        if (fullscreen && document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
         onFullscreenChange(fullscreen);
     }
 
     return (
         <nav
-            className="navbar"
+            className={`navbar${isFullscreen && navbarVisible ? " is-revealed" : ""}`}
+            onPointerMove={(event) => {
+                if (event.pointerType !== "mouse") return;
+                const navbar = event.currentTarget;
+                const bounds = navbar.getBoundingClientRect();
+                navbar.style.setProperty("--glow-x", `${event.clientX - bounds.left}px`);
+                navbar.style.setProperty("--glow-y", `${event.clientY - bounds.top}px`);
+                navbar.style.setProperty("--glow-opacity", "1");
+            }}
+            onPointerLeave={(event) => {
+                event.currentTarget.style.setProperty("--glow-opacity", "0");
+            }}
             onMouseDown={(event) => {
                 if (event.button === 0 && event.detail === 1 && !isInteractiveTarget(event)) {
                     void window.startDragging();
