@@ -7,11 +7,18 @@ function isInteractiveTarget(event: MouseEvent<HTMLElement>) {
         event.target.closest("button, a, input, select, textarea, [role='button']") !== null;
 }
 
-export default function Navbar() {
+type NavbarProps = {
+    isFullscreen: boolean;
+    onFullscreenChange: (isFullscreen: boolean) => void;
+};
+
+export default function Navbar({ isFullscreen, onFullscreenChange }: NavbarProps) {
     const window = getCurrentWindow();
 
     async function toggleFullscreen() {
-        await window.setFullscreen(!(await window.isFullscreen()));
+        const fullscreen = !(await window.isFullscreen());
+        await window.setFullscreen(fullscreen);
+        onFullscreenChange(fullscreen);
     }
 
     return (
@@ -59,6 +66,7 @@ export default function Navbar() {
                         className="window-control minimize-control"
                         type="button"
                         aria-label="Minimize window"
+                        disabled={isFullscreen}
                         onClick={() => window.minimize()}
                     />
                     <button
