@@ -66,9 +66,85 @@ body {
 }
 
 .app-content {
+  display: grid;
+  grid-template-columns: minmax(0, min(var(--panel-width, max(320px, 25%)), calc(100% - 216px))) 16px minmax(0, 1fr);
   height: calc(100% - 40px);
   margin-top: 40px;
   padding: 12px;
+  transition: grid-template-columns 240ms ease;
+}
+
+.app-content.is-resizing {
+  transition: none;
+}
+
+.app-content.is-panel-collapsed .workspace-panel {
+  visibility: hidden;
+  border: 0;
+}
+
+.grid-pane {
+  min-width: 0;
+  min-height: 0;
+}
+
+.workspace-divider {
+  position: relative;
+  width: 16px;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.workspace-divider::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3px;
+  height: 44px;
+  border-radius: 3px;
+  background: var(--border);
+  transform: translate(-50%, -50%);
+  transition: background 160ms ease, height 160ms ease;
+}
+
+.workspace-divider span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 14px;
+  height: 22px;
+  border-radius: 4px;
+  background: var(--app-bg);
+  color: var(--text);
+  font-size: 17px;
+  line-height: 1;
+  transform: translate(-50%, -50%);
+}
+
+.workspace-divider:hover::before,
+.workspace-divider:focus-visible::before {
+  height: 60px;
+  background: var(--text);
+}
+
+.workspace-divider:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-content {
+    transition: none;
+  }
 }
 
 .window-fullscreen .app-content {

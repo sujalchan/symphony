@@ -1,0 +1,61 @@
+.workspace-panel {
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--grid-bg);
+}
+
+.workspace-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.workspace-tabs button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  height: 36px;
+  padding: 0 6px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.workspace-tabs button:hover,
+.workspace-tabs button:focus-visible {
+  background: var(--hover);
+}
+
+.workspace-tabs button.is-active {
+  border-color: var(--border);
+  background: var(--nav-bg);
+  color: var(--text-strong);
+}
+
+.workspace-tabs svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
+.workspace-panel-content {
+  padding: 16px;
+}
+
+.workspace-panel-content h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
