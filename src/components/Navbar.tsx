@@ -59,13 +59,15 @@ export default function Navbar({ isFullscreen, onFullscreenChange }: NavbarProps
                     <button
                         className="window-control fullscreen-control"
                         type="button"
-                        aria-label="Toggle fullscreen"
+                        aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                        data-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
                         onClick={toggleFullscreen}
                     />
                     <button
                         className="window-control minimize-control"
                         type="button"
                         aria-label="Minimize window"
+                        data-label="Minimize"
                         disabled={isFullscreen}
                         onClick={() => window.minimize()}
                     />
@@ -73,6 +75,7 @@ export default function Navbar({ isFullscreen, onFullscreenChange }: NavbarProps
                         className="window-control close-control"
                         type="button"
                         aria-label="Close window"
+                        data-label="Close Symphony"
                         onClick={() => window.close()}
                     />
                 </div>
