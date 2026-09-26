@@ -38,7 +38,7 @@ function App() {
   const isPanelOpen = panelWidth !== 0;
 
   function maximumPanelWidth(contentWidth: number) {
-    return Math.max(0, Math.min(contentWidth - 216, Math.max(320, contentWidth * 0.45)));
+    return Math.max(0, (contentWidth - 12) / 2);
   }
 
   function availableContentWidth() {
@@ -55,6 +55,21 @@ function App() {
     const width = currentDrag.startWidth + clientX - currentDrag.startX;
     return Math.max(0, Math.min(maximumPanelWidth(contentWidth), width));
   }
+
+  useEffect(() => {
+    const content = appContent.current;
+    if (!content) return;
+
+    const observer = new ResizeObserver(() => {
+      const maximum = maximumPanelWidth(availableContentWidth());
+      setPanelWidth((width) => width === null || width === 0 ? width : Math.min(width, maximum));
+      if (lastExpandedWidth.current !== null) {
+        lastExpandedWidth.current = Math.min(lastExpandedWidth.current, maximum);
+      }
+    });
+    observer.observe(content);
+    return () => observer.disconnect();
+  }, []);
 
   function toggleTheme() {
     setTheme((current) => current === "dark" ? "light" : "dark");

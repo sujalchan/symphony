@@ -1,13 +1,13 @@
 :root {
-    --navbar-glass: rgba(27, 31, 39, 0.82);
-    --navbar-glow: rgba(92, 135, 205, 0.34);
+    --navbar-glass: rgba(28, 28, 30, 0.82);
+    --navbar-glow: rgba(175, 175, 180, 0.28);
     --navbar-mouse-glow: rgba(255, 255, 255, 0.045);
     --navbar-edge: rgba(255, 255, 255, 0.19);
 }
 
 :root[data-theme="light"] {
-    --navbar-glass: rgba(210, 217, 229, 0.82);
-    --navbar-glow: rgba(110, 151, 210, 0.42);
+    --navbar-glass: rgba(222, 222, 224, 0.82);
+    --navbar-glow: rgba(110, 110, 115, 0.18);
     --navbar-mouse-glow: rgba(255, 255, 255, 0.12);
     --navbar-edge: rgba(255, 255, 255, 0.85);
 }

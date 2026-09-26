@@ -67,7 +67,7 @@ body {
 
 .app-content {
   display: grid;
-  grid-template-columns: minmax(0, min(var(--panel-width, max(320px, 25%)), calc(100% - 216px))) 16px minmax(0, 1fr);
+  grid-template-columns: minmax(0, min(var(--panel-width, max(320px, 25%)), calc(50% - 6px))) 12px minmax(0, 1fr);
   height: calc(100% - 40px);
   margin-top: 40px;
   padding: 12px 12px 12px 68px;
@@ -90,7 +90,7 @@ body {
 
 .workspace-divider {
   position: relative;
-  width: 16px;
+  width: 12px;
   height: 100%;
   padding: 0;
   border: 0;
@@ -119,7 +119,7 @@ body {
   z-index: 1;
   display: grid;
   place-items: center;
-  width: 12px;
+  width: 10px;
   height: 16px;
   border-radius: 4px;
   background: var(--app-bg);
