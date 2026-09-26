@@ -5,6 +5,34 @@
   justify-content: center;
 }
 
+.about-logo-button {
+  display: grid;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  place-items: center;
+  cursor: pointer;
+}
+
+.about-logo-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 5px;
+  border-radius: 12px;
+}
+
+.about-logo-button.is-rainbow {
+  animation: about-rainbow 2.8s linear infinite;
+}
+
+@keyframes about-rainbow {
+  from { filter: hue-rotate(0deg) saturate(145%) drop-shadow(0 0 7px rgba(255, 80, 80, 0.45)); }
+  to { filter: hue-rotate(360deg) saturate(145%) drop-shadow(0 0 7px rgba(255, 80, 80, 0.45)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-logo-button.is-rainbow { animation-duration: 8s; }
+}
+
 .about-window-content {
   display: flex;
   flex-direction: column;

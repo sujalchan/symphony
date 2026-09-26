@@ -32,6 +32,7 @@ type PopupWindowProps = {
   minSize?: Size;
   resizable?: boolean;
   popupGlide: number;
+  bouncing?: boolean;
 };
 
 const DEFAULT_MIN_SIZE = { width: 280, height: 220 };
@@ -39,7 +40,7 @@ const POPUP_GAP = 12;
 const NAVBAR_HEIGHT = 40;
 const POPUP_TOP = NAVBAR_HEIGHT + POPUP_GAP;
 
-export default function PopupWindow({ title, children, onClose, onMinimizeStart, onMinimize, minimized = false, windowId, bodyClassName = "", uiScale, initialSize = { width: 360, height: 420 }, minSize = DEFAULT_MIN_SIZE, resizable = true, popupGlide }: PopupWindowProps) {
+export default function PopupWindow({ title, children, onClose, onMinimizeStart, onMinimize, minimized = false, windowId, bodyClassName = "", uiScale, initialSize = { width: 360, height: 420 }, minSize = DEFAULT_MIN_SIZE, resizable = true, popupGlide, bouncing = false }: PopupWindowProps) {
   const titleId = useId();
   const windowRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -206,6 +207,57 @@ export default function PopupWindow({ title, children, onClose, onMinimizeStart,
     wasMinimized.current = minimized;
   }, [minimized]);
 
+  useEffect(() => {
+    if (!bouncing || minimized) return;
+    const element = windowRef.current;
+    const root = element?.parentElement;
+    if (!element || !root) return;
+    const rootBounds = root.getBoundingClientRect();
+    const bounds = element.getBoundingClientRect();
+    let x = (bounds.left - rootBounds.left) / scale;
+    let y = (bounds.top - rootBounds.top) / scale;
+    let velocityX = 150;
+    let velocityY = 150;
+    let previousTime: number | null = null;
+    let frame = 0;
+
+    element.style.transform = "none";
+    element.style.transition = "none";
+    setDragging(false);
+    setPosition({ x, y });
+
+    const animate = (time: number) => {
+      if (previousTime === null) previousTime = time;
+      const elapsed = Math.min((time - previousTime) / 1000, 0.05);
+      previousTime = time;
+      const maxX = Math.max(POPUP_GAP, root.clientWidth - POPUP_GAP - element.offsetWidth);
+      const maxY = Math.max(POPUP_TOP, root.clientHeight - POPUP_GAP - element.offsetHeight);
+      if (element.classList.contains("is-minimizing") || element.classList.contains("is-restoring")) {
+        frame = requestAnimationFrame(animate);
+        return;
+      }
+      x += velocityX * elapsed;
+      y += velocityY * elapsed;
+      if (x <= POPUP_GAP || x >= maxX) {
+        x = Math.max(POPUP_GAP, Math.min(x, maxX));
+        velocityX *= -1;
+      }
+      if (y <= POPUP_TOP || y >= maxY) {
+        y = Math.max(POPUP_TOP, Math.min(y, maxY));
+        velocityY *= -1;
+      }
+      element.style.left = `${x}px`;
+      element.style.top = `${y}px`;
+      frame = requestAnimationFrame(animate);
+    };
+    frame = requestAnimationFrame(animate);
+    return () => {
+      cancelAnimationFrame(frame);
+      element.style.transition = "";
+      setPosition({ x, y });
+    };
+  }, [bouncing, minimized, scale]);
+
   function minimizeWindow() {
     if (!onMinimize || minimizePending.current || motion === "minimizing") return;
     minimizePending.current = true;
@@ -275,6 +327,7 @@ export default function PopupWindow({ title, children, onClose, onMinimizeStart,
   }, []);
 
   function beginGesture(event: PointerEvent<HTMLElement>, kind: Gesture["kind"], direction: ResizeDirection = "se") {
+    if (bouncing) return;
     if (dragSettleTimer.current !== null || event.button !== 0 || !event.isPrimary || (kind === "move" && event.target instanceof Element && event.target.closest("button"))) return;
     if (maximizedRef.current && kind !== "move") return;
     const element = windowRef.current;
@@ -513,36 +566,36 @@ export default function PopupWindow({ title, children, onClose, onMinimizeStart,
   } as CSSProperties;
   return (
     <>
-    {snapPreview && <div className="popup-snap-preview" aria-hidden="true" style={{
-      left: snapPreview.position.x,
-      top: snapPreview.position.y,
-      width: snapPreview.size.width,
-      height: snapPreview.size.height,
-    }} />}
-    <div ref={windowRef} className={`popup-window${position ? " is-positioned" : ""}${focused ? " is-focused" : ""}${motion !== "idle" ? ` is-${motion}` : ""}${!resizable ? " is-non-resizable" : ""}${maximized ? " is-maximized" : ""}${geometryAnimating ? " is-geometry-animating" : ""}${dragging ? " is-dragging" : ""}${previewResizing ? " is-preview-resizing" : ""}${rubberbanding ? " is-rubberbanding" : ""}`}
-      role="dialog" aria-labelledby={titleId} data-popup-id={windowId} style={style} hidden={minimized} onAnimationEnd={finishMotion}>
-      <div className="popup-window-header" onPointerDown={(event) => beginGesture(event, "move")}
-        onDoubleClick={(event) => {
-          if (!resizable || (event.target instanceof Element && event.target.closest("button"))) return;
-          toggleMaximized();
-        }}>
-        <span id={titleId}>{title}</span>
-        <div className="popup-window-controls">
-          <button className="window-control fullscreen-control" type="button" disabled={!resizable}
-            aria-label={`${maximized ? "Restore" : "Expand"} ${title}`} data-label={`${maximized ? "Restore" : "Expand"} ${title}`}
-            aria-pressed={maximized} onClick={toggleMaximized} />
-          {onMinimize && <button className="window-control minimize-control" type="button"
-            aria-label={`Minimize ${title}`} data-label={`Minimize ${title}`} onClick={minimizeWindow} />}
-          <button ref={closeRef} className="window-control close-control" type="button"
-            aria-label={`Close ${title}`} data-label={`Close ${title}`} onClick={onClose} />
+      {snapPreview && <div className="popup-snap-preview" aria-hidden="true" style={{
+        left: snapPreview.position.x,
+        top: snapPreview.position.y,
+        width: snapPreview.size.width,
+        height: snapPreview.size.height,
+      }} />}
+      <div ref={windowRef} className={`popup-window${position ? " is-positioned" : ""}${focused ? " is-focused" : ""}${motion !== "idle" ? ` is-${motion}` : ""}${!resizable ? " is-non-resizable" : ""}${maximized ? " is-maximized" : ""}${geometryAnimating ? " is-geometry-animating" : ""}${dragging ? " is-dragging" : ""}${previewResizing ? " is-preview-resizing" : ""}${rubberbanding ? " is-rubberbanding" : ""}`}
+        role="dialog" aria-labelledby={titleId} data-popup-id={windowId} style={style} hidden={minimized} onAnimationEnd={finishMotion}>
+        <div className="popup-window-header" onPointerDown={(event) => beginGesture(event, "move")}
+          onDoubleClick={(event) => {
+            if (!resizable || (event.target instanceof Element && event.target.closest("button"))) return;
+            toggleMaximized();
+          }}>
+          <span id={titleId}>{title}</span>
+          <div className="popup-window-controls">
+            <button className="window-control fullscreen-control" type="button" disabled={!resizable || bouncing}
+              aria-label={`${maximized ? "Restore" : "Expand"} ${title}`} data-label={`${maximized ? "Restore" : "Expand"} ${title}`}
+              aria-pressed={maximized} onClick={toggleMaximized} />
+            {onMinimize && <button className="window-control minimize-control" type="button"
+              aria-label={`Minimize ${title}`} data-label={`Minimize ${title}`} onClick={minimizeWindow} />}
+            <button ref={closeRef} className="window-control close-control" type="button"
+              aria-label={`Close ${title}`} data-label={`Close ${title}`} onClick={onClose} />
+          </div>
         </div>
+        <div className={`popup-window-body ${bodyClassName}`}>{children}</div>
+        {(["nw", "ne", "sw", "se"] as const).map((direction) => <div key={direction}
+          className={`popup-window-resize is-${direction}`} role={resizable ? "button" : undefined}
+          aria-label={`Resize ${title} window from ${direction}`} tabIndex={resizable ? 0 : -1}
+          onPointerDown={(event) => beginGesture(event, "resize", direction)} onKeyDown={resizeWithKeyboard} />)}
       </div>
-      <div className={`popup-window-body ${bodyClassName}`}>{children}</div>
-      {(["nw", "ne", "sw", "se"] as const).map((direction) => <div key={direction}
-        className={`popup-window-resize is-${direction}`} role={resizable ? "button" : undefined}
-        aria-label={`Resize ${title} window from ${direction}`} tabIndex={resizable ? 0 : -1}
-        onPointerDown={(event) => beginGesture(event, "resize", direction)} onKeyDown={resizeWithKeyboard} />)}
-    </div>
     </>
   );
 }

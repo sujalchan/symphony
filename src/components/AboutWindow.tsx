@@ -1,3 +1,4 @@
+import { useState } from "react";
 import PopupWindow from "./PopupWindow";
 import SymphonyMark from "./SymphonyMark";
 import "./AboutWindow.css";
@@ -10,12 +11,16 @@ export default function AboutWindow({ onClose, onMinimizeStart, onMinimize, mini
   uiScale: number;
   popupGlide: number;
 }) {
+  const [easterEgg, setEasterEgg] = useState(false);
   return (
     <PopupWindow title="About Symphony IDE" windowId="about" onClose={onClose} onMinimizeStart={onMinimizeStart}
       onMinimize={onMinimize} minimized={minimized} uiScale={uiScale} initialSize={{ width: 420, height: 250 }}
-      minSize={{ width: 420, height: 250 }} resizable={false} popupGlide={popupGlide} bodyClassName="about-popup-body">
+      minSize={{ width: 420, height: 250 }} resizable={false} popupGlide={popupGlide} bouncing={easterEgg} bodyClassName="about-popup-body">
       <div className="about-window-content">
-        <SymphonyMark className="about-window-logo" />
+        <button className={`about-logo-button${easterEgg ? " is-rainbow" : ""}`} type="button"
+          aria-label={easterEgg ? "Disable Symphony rainbow mode" : "Activate Symphony rainbow mode"} aria-pressed={easterEgg} onClick={() => setEasterEgg((prev) => !prev)}>
+          <SymphonyMark className="about-window-logo" />
+        </button>
         <h1>Symphony IDE</h1>
         <p className="about-window-copyright">Static Talent Group 2026 ©</p>
       </div>
