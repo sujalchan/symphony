@@ -13,37 +13,84 @@
   background: var(--menu-bg);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
   transform: translate(-50%, -50%);
-  transition: border-color 180ms ease, box-shadow 180ms ease;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 220ms ease,
+    -webkit-backdrop-filter 220ms ease,
+    backdrop-filter 220ms ease;
 }
 
-.popup-window.is-positioned { transform: none; }
-.popup-window[hidden] { display: none; }
+.popup-window.is-positioned {
+  transform: none;
+}
+
+.popup-window[hidden] {
+  display: none;
+}
+
 .popup-window.is-minimizing {
   z-index: 199;
   pointer-events: none;
   animation: popup-minimize 220ms cubic-bezier(0.4, 0, 1, 1) forwards;
 }
+
 .popup-window.is-restoring {
   animation: popup-restore 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes popup-minimize {
-  to { scale: 0.12; translate: var(--popup-minimize-x, 0px) var(--popup-minimize-y, -22px); opacity: 0; filter: blur(2px); }
+  to {
+    scale: 0.12;
+    translate: var(--popup-minimize-x, 0px) var(--popup-minimize-y, -22px);
+    opacity: 0;
+    filter: blur(2px);
+  }
 }
 
 @keyframes popup-restore {
-  from { scale: 0.12; translate: var(--popup-minimize-x, 0px) var(--popup-minimize-y, -22px); opacity: 0; filter: blur(2px); }
-  to { scale: 1; translate: 0 0; opacity: 1; filter: blur(0); }
+  from {
+    scale: 0.12;
+    translate: var(--popup-minimize-x, 0px) var(--popup-minimize-y, -22px);
+    opacity: 0;
+    filter: blur(2px);
+  }
+
+  to {
+    scale: 1;
+    translate: 0 0;
+    opacity: 1;
+    filter: blur(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .popup-window.is-minimizing,
-  .popup-window.is-restoring { animation-duration: 1ms; }
+  .popup-window.is-restoring {
+    animation-duration: 1ms;
+  }
 }
+
 .popup-window.is-focused {
   z-index: 201;
   border-color: color-mix(in srgb, var(--text) 28%, transparent);
+  background: var(--menu-bg);
   box-shadow: 0 18px 60px rgba(0, 0, 0, 0.4);
+}
+
+:root[data-glass="on"] .popup-window.is-focused {
+  background: color-mix(in srgb, var(--menu-bg) 50%, transparent);
+  -webkit-backdrop-filter: blur(10px) saturate(125%);
+  backdrop-filter: blur(10px) saturate(125%);
+}
+
+.popup-window.is-preview-resizing {
+  transition: none;
+}
+
+.popup-window.is-rubberbanding {
+  transition: width 320ms cubic-bezier(0.2, 1.5, 0.45, 1), height 320ms cubic-bezier(0.2, 1.5, 0.45, 1);
 }
 
 .popup-window-header {
@@ -72,13 +119,39 @@
   color: var(--text-strong);
 }
 
-.popup-window-header:active { cursor: grabbing; }
-.popup-window-controls { display: flex; align-items: center; gap: 8px; }
-.popup-window-controls .window-control { flex: 0 0 auto; }
-.popup-window:not(.is-focused) .close-control { background: var(--grid-dot); }
-.popup-window:not(.is-focused) .minimize-control { background: var(--grid-dot); }
+.popup-window-header:active {
+  cursor: grabbing;
+}
 
-.popup-window-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+.popup-window-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.popup-window-controls .window-control {
+  flex: 0 0 auto;
+}
+
+.popup-window:not(.is-focused) .close-control {
+  background: var(--grid-dot);
+}
+
+.popup-window:not(.is-focused) .minimize-control {
+  background: var(--grid-dot);
+}
+
+.popup-window-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.popup-window-body::-webkit-scrollbar {
+  display: none;
+}
 
 .popup-window-resize {
   position: absolute;
@@ -104,4 +177,31 @@
   opacity: 0.55;
 }
 
-.popup-window-resize:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; }
+.popup-window.is-non-resizable .popup-window-resize::after {
+  opacity: 0;
+}
+
+.popup-window.is-non-resizable .popup-window-resize::after {
+  transition: opacity 180ms ease-in-out, border-color 180ms ease-in-out;
+}
+
+.popup-window.is-non-resizable .popup-window-resize:hover::after {
+  border-color: #ff5f57;
+  opacity: 0.85;
+}
+
+.popup-window.is-non-resizable:is(.is-preview-resizing, .is-rubberbanding) .popup-window-resize::after {
+  border-color: #ff5f57;
+  opacity: 1;
+}
+
+.popup-window-resize:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popup-window.is-rubberbanding {
+    transition-duration: 1ms;
+  }
+}

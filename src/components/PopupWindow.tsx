@@ -26,21 +26,25 @@ type PopupWindowProps = {
   uiScale: number;
   initialSize?: Size;
   minSize?: Size;
+  resizable?: boolean;
 };
 
 const DEFAULT_MIN_SIZE = { width: 280, height: 220 };
 
-export default function PopupWindow({ title, children, onClose, onMinimizeStart, onMinimize, minimized = false, windowId, bodyClassName = "", uiScale, initialSize = { width: 360, height: 420 }, minSize = DEFAULT_MIN_SIZE }: PopupWindowProps) {
+export default function PopupWindow({ title, children, onClose, onMinimizeStart, onMinimize, minimized = false, windowId, bodyClassName = "", uiScale, initialSize = { width: 360, height: 420 }, minSize = DEFAULT_MIN_SIZE, resizable = true }: PopupWindowProps) {
   const titleId = useId();
   const windowRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const gesture = useRef<Gesture | null>(null);
   const stopListening = useRef<(() => void) | null>(null);
   const minimizePending = useRef(false);
+  const rubberbandTimer = useRef<number | null>(null);
   const wasMinimized = useRef(minimized);
   const [position, setPosition] = useState<Position | null>(null);
   const [size, setSize] = useState<Size>(initialSize);
   const [focused, setFocused] = useState(true);
+  const [previewResizing, setPreviewResizing] = useState(false);
+  const [rubberbanding, setRubberbanding] = useState(false);
   const [motion, setMotion] = useState<"idle" | "minimizing" | "restoring">("idle");
   const scale = uiScale / 100;
 
@@ -84,6 +88,7 @@ export default function PopupWindow({ title, children, onClose, onMinimizeStart,
       document.removeEventListener("pointerdown", onPointerDown, true);
       document.removeEventListener("focusin", onFocusIn, true);
       stopListening.current?.();
+      if (rubberbandTimer.current !== null) window.clearTimeout(rubberbandTimer.current);
     };
   }, []);
 
@@ -172,6 +177,12 @@ export default function PopupWindow({ title, children, onClose, onMinimizeStart,
       y: (bounds.top - rootBounds.top) / scale,
     };
     const currentSize = { width: element.offsetWidth, height: element.offsetHeight };
+    setPreviewResizing(false);
+    setRubberbanding(false);
+    if (rubberbandTimer.current !== null) {
+      window.clearTimeout(rubberbandTimer.current);
+      rubberbandTimer.current = null;
+    }
     gesture.current = { kind, pointerId: event.pointerId, clientX: event.clientX, clientY: event.clientY, position: start, size: currentSize };
     setPosition(start);
     setSize(currentSize);
@@ -186,12 +197,27 @@ export default function PopupWindow({ title, children, onClose, onMinimizeStart,
       const dx = (pointer.clientX - current.clientX) / scale;
       const dy = (pointer.clientY - current.clientY) / scale;
       if (current.kind === "move") setPosition(clampPosition({ x: current.position.x + dx, y: current.position.y + dy }, current.size));
-      else setSize(clampSize({ width: current.size.width + dx, height: current.size.height + dy }, current.position));
+      else {
+        setSize(clampSize({ width: current.size.width + dx, height: current.size.height + dy }, current.position));
+        if (!resizable) setPreviewResizing(true);
+      }
     };
     const stop = (pointer: globalThis.PointerEvent) => {
-      if (gesture.current?.pointerId !== pointer.pointerId) return;
+      const current = gesture.current;
+      if (current?.pointerId !== pointer.pointerId) return;
       gesture.current = null;
       stopListening.current?.();
+      if (!resizable && current.kind === "resize") {
+        setPreviewResizing(false);
+        if (Math.abs(pointer.clientX - current.clientX) > 1 || Math.abs(pointer.clientY - current.clientY) > 1) {
+          setRubberbanding(true);
+          setSize(current.size);
+          rubberbandTimer.current = window.setTimeout(() => {
+            rubberbandTimer.current = null;
+            setRubberbanding(false);
+          }, 340);
+        }
+      }
       if (target.hasPointerCapture(pointer.pointerId)) target.releasePointerCapture(pointer.pointerId);
     };
     window.addEventListener("pointermove", move, true);
@@ -206,6 +232,7 @@ export default function PopupWindow({ title, children, onClose, onMinimizeStart,
   }
 
   function resizeWithKeyboard(event: KeyboardEvent<HTMLDivElement>) {
+    if (!resizable) return;
     const step = event.shiftKey ? 20 : 10;
     const delta = {
       ArrowRight: { width: step, height: 0 },
@@ -225,9 +252,15 @@ export default function PopupWindow({ title, children, onClose, onMinimizeStart,
     setSize((current) => clampSize({ width: current.width + delta.width, height: current.height + delta.height }, at));
   }
 
-  const style = { width: size.width, height: size.height, ...(position ? { left: position.x, top: position.y } : {}) } as CSSProperties;
+  const contentScale = Math.min(size.width / initialSize.width, size.height / initialSize.height);
+  const style = {
+    width: size.width,
+    height: size.height,
+    "--popup-content-scale": contentScale,
+    ...(position ? { left: position.x, top: position.y } : {}),
+  } as CSSProperties;
   return (
-    <div ref={windowRef} className={`popup-window${position ? " is-positioned" : ""}${focused ? " is-focused" : ""}${motion !== "idle" ? ` is-${motion}` : ""}`}
+    <div ref={windowRef} className={`popup-window${position ? " is-positioned" : ""}${focused ? " is-focused" : ""}${motion !== "idle" ? ` is-${motion}` : ""}${!resizable ? " is-non-resizable" : ""}${previewResizing ? " is-preview-resizing" : ""}${rubberbanding ? " is-rubberbanding" : ""}`}
       role="dialog" aria-labelledby={titleId} data-popup-id={windowId} style={style} hidden={minimized} onAnimationEnd={finishMotion}>
       <div className="popup-window-header" onPointerDown={(event) => beginGesture(event, "move")}>
         <span id={titleId}>{title}</span>
@@ -239,8 +272,8 @@ export default function PopupWindow({ title, children, onClose, onMinimizeStart,
         </div>
       </div>
       <div className={`popup-window-body ${bodyClassName}`}>{children}</div>
-      <div className="popup-window-resize" role="button" aria-label={`Resize ${title} window`}
-        tabIndex={0} onPointerDown={(event) => beginGesture(event, "resize")}
+      <div className="popup-window-resize" role={resizable ? "button" : undefined} aria-label={`Resize ${title} window`}
+        tabIndex={resizable ? 0 : -1} onPointerDown={(event) => beginGesture(event, "resize")}
         onKeyDown={resizeWithKeyboard} />
     </div>
   );

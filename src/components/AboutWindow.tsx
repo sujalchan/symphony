@@ -12,7 +12,7 @@ export default function AboutWindow({ onClose, onMinimizeStart, onMinimize, mini
   return (
     <PopupWindow title="About Symphony IDE" windowId="about" onClose={onClose} onMinimizeStart={onMinimizeStart}
       onMinimize={onMinimize} minimized={minimized} uiScale={uiScale} initialSize={{ width: 420, height: 250 }}
-      minSize={{ width: 420, height: 250 }} bodyClassName="about-popup-body">
+      minSize={{ width: 420, height: 250 }} resizable={false} bodyClassName="about-popup-body">
       <div className="about-window-content">
         <SymphonyMark className="about-window-logo" />
         <h1>Symphony IDE</h1>

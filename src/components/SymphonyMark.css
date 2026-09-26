@@ -5,12 +5,18 @@
   overflow: visible;
   color: var(--accent);
   transform: rotate(-45deg);
+  filter: drop-shadow(0 2px 4px var(--accent-soft)) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
 }
 
-.symphony-mark path {
+.symphony-mark-base,
+.symphony-mark-highlight {
   fill: none;
-  stroke: currentColor;
-  stroke-width: 11;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+
+.symphony-mark-base { stroke-width: 12; }
+.symphony-mark-highlight { stroke: rgba(255, 255, 255, 0.42); stroke-width: 2.5; }
+.symphony-mark-grain { opacity: 0.48; mix-blend-mode: soft-light; }
+
+:root[data-glass="off"] .symphony-mark-grain { display: none; }
