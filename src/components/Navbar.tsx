@@ -165,8 +165,8 @@ export default function Navbar({ isFullscreen, onFullscreenChange, theme, onThem
                     <button
                         className="window-control close-control"
                         type="button"
-                        aria-label="Close window"
-                        data-label="Close Symphony"
+                        aria-label="Close Symphony IDE"
+                        data-label="Close Symphony IDE"
                         onClick={() => window.close()}
                     />
                 </div>

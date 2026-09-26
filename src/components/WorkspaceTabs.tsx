@@ -93,7 +93,7 @@ export default function WorkspaceTabs({ activeTab, onSelect }: { activeTab: Work
 
   return (
     <div ref={railRef} className="workspace-tab-rail" role="tablist" aria-label="Workspace panels" aria-orientation="vertical">
-      <div className="workspace-tab-indicator" aria-hidden="true" style={{ transform: `translate(4px, ${indicatorY}px)` }} />
+      <div className="workspace-tab-indicator" aria-hidden="true" style={{ transform: `translate(-50%, ${indicatorY}px)` }} />
       <div className="workspace-tab-group" role="presentation">
         {tabs.slice(0, 3).map((tab, index) => (
           <TabButton key={tab} tab={tab} index={index} activeTab={activeTab} onSelect={onSelect} />

@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "symphony",
+  "productName": "Symphony IDE",
   "version": "0.1.0",
   "identifier": "com.statictg.symphony",
   "build": {
@@ -13,7 +13,7 @@
     "macOSPrivateApi": true,
     "windows": [
       {
-        "title": "symphony",
+        "title": "Symphony IDE",
         "width": 1280,
         "height": 720,
         "minWidth": 1280,
