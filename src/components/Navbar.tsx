@@ -4,6 +4,7 @@ import "./Navbar.css";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { isTauri } from "@tauri-apps/api/core";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import SymphonyMark from "./SymphonyMark";
 
 function isInteractiveTarget(event: MouseEvent<HTMLElement>) {
     return event.target instanceof Element &&
@@ -13,13 +14,14 @@ function isInteractiveTarget(event: MouseEvent<HTMLElement>) {
 type NavbarProps = {
     isFullscreen: boolean;
     onFullscreenChange: (isFullscreen: boolean) => void;
+    onAboutOpen: () => void;
     onAppearanceOpen: () => void;
     minimizedWindows: Array<{ id: string; title: string }>;
     onWindowRestore: (id: string) => void;
     uiScale: number;
 };
 
-export default function Navbar({ isFullscreen, onFullscreenChange, onAppearanceOpen, minimizedWindows, onWindowRestore, uiScale }: NavbarProps) {
+export default function Navbar({ isFullscreen, onFullscreenChange, onAboutOpen, onAppearanceOpen, minimizedWindows, onWindowRestore, uiScale }: NavbarProps) {
     const appWindow = isTauri() ? getCurrentWindow() : null;
     const [openMenu, setOpenMenu] = useState<"file" | "project" | "window" | "help" | null>(null);
     const [navbarVisible, setNavbarVisible] = useState(false);
@@ -131,6 +133,10 @@ export default function Navbar({ isFullscreen, onFullscreenChange, onAppearanceO
             }}
         >
             <div className="navbar-left">
+                <button className="about-menu-button" type="button" aria-label="About Symphony IDE"
+                    title="About Symphony IDE" onClick={onAboutOpen}>
+                    <SymphonyMark />
+                </button>
                 <div className="dropdown" ref={openMenu === "file" ? activeDropdown : null}>
                     <button className="menu-button" aria-expanded={openMenu === "file"} aria-controls="file-dropdown" onClick={() => setOpenMenu(openMenu === "file" ? null : "file")}>File</button>
 

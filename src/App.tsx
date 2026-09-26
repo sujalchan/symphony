@@ -3,6 +3,7 @@ import type { CSSProperties, PointerEvent } from "react";
 import { isTauri } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import Grid from "./components/Grid";
+import AboutWindow from "./components/AboutWindow";
 import AppearanceWindow from "./components/AppearanceWindow";
 import Navbar from "./components/Navbar";
 import WorkspacePanel from "./components/WorkspacePanel";
@@ -168,6 +169,9 @@ function App() {
   const [isAppearanceWindowOpen, setIsAppearanceWindowOpen] = useState(false);
   const [isAppearanceWindowMinimized, setIsAppearanceWindowMinimized] = useState(false);
   const [isAppearanceWindowMinimizing, setIsAppearanceWindowMinimizing] = useState(false);
+  const [isAboutWindowOpen, setIsAboutWindowOpen] = useState(false);
+  const [isAboutWindowMinimized, setIsAboutWindowMinimized] = useState(false);
+  const [isAboutWindowMinimizing, setIsAboutWindowMinimizing] = useState(false);
   const [panelWidth, setPanelWidth] = useState<number | null>(null);
   const [isResizing, setIsResizing] = useState(false);
   const appContent = useRef<HTMLElement>(null);
@@ -218,7 +222,14 @@ function App() {
     setIsAppearanceWindowMinimized(false);
     setIsAppearanceWindowMinimizing(false);
     setIsAppearanceWindowOpen(true);
-    requestAnimationFrame(() => document.querySelector<HTMLButtonElement>(".popup-window .close-control")?.focus());
+    requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('[data-popup-id="appearance"] .close-control')?.focus());
+  }
+
+  function openAboutWindow() {
+    setIsAboutWindowMinimized(false);
+    setIsAboutWindowMinimizing(false);
+    setIsAboutWindowOpen(true);
+    requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('[data-popup-id="about"] .close-control')?.focus());
   }
 
   function minimizeAppearanceWindow() {
@@ -230,10 +241,23 @@ function App() {
     setIsAppearanceWindowMinimizing(true);
   }
 
+  function minimizeAboutWindow() {
+    setIsAboutWindowMinimizing(false);
+    setIsAboutWindowMinimized(true);
+  }
+
+  function startMinimizingAboutWindow() {
+    setIsAboutWindowMinimizing(true);
+  }
+
   function restoreWindow(id: string) {
     if (id === "appearance") {
       setIsAppearanceWindowMinimized(false);
       setIsAppearanceWindowMinimizing(false);
+    }
+    if (id === "about") {
+      setIsAboutWindowMinimized(false);
+      setIsAboutWindowMinimizing(false);
     }
   }
 
@@ -242,6 +266,13 @@ function App() {
     setIsAppearanceWindowMinimizing(false);
     setIsAppearanceWindowOpen(false);
     requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('[aria-controls="window-dropdown"]')?.focus());
+  }
+
+  function closeAboutWindow() {
+    setIsAboutWindowMinimized(false);
+    setIsAboutWindowMinimizing(false);
+    setIsAboutWindowOpen(false);
+    requestAnimationFrame(() => document.querySelector<HTMLButtonElement>(".about-menu-button")?.focus());
   }
 
   useEffect(() => {
@@ -300,8 +331,12 @@ function App() {
   return (
     <>
       <Navbar isFullscreen={isFullscreen} onFullscreenChange={setIsFullscreen}
+        onAboutOpen={openAboutWindow}
         onAppearanceOpen={openAppearanceWindow}
-        minimizedWindows={isAppearanceWindowMinimized || isAppearanceWindowMinimizing ? [{ id: "appearance", title: "Appearance" }] : []}
+        minimizedWindows={[
+          ...(isAppearanceWindowMinimized || isAppearanceWindowMinimizing ? [{ id: "appearance", title: "Appearance" }] : []),
+          ...(isAboutWindowMinimized || isAboutWindowMinimizing ? [{ id: "about", title: "About Symphony IDE" }] : []),
+        ]}
         onWindowRestore={restoreWindow} uiScale={uiScale} />
       <WorkspaceTabs activeTab={activeTab} uiScale={uiScale} onSelect={(tab) => {
         setActiveTab(tab);
@@ -372,6 +407,8 @@ function App() {
       {isAppearanceWindowOpen && <AppearanceWindow settings={appearanceSettings} onClose={closeAppearanceWindow}
         onMinimizeStart={startMinimizingAppearanceWindow} onMinimize={minimizeAppearanceWindow}
         minimized={isAppearanceWindowMinimized} />}
+      {isAboutWindowOpen && <AboutWindow onClose={closeAboutWindow} onMinimizeStart={startMinimizingAboutWindow}
+        onMinimize={minimizeAboutWindow} minimized={isAboutWindowMinimized} uiScale={uiScale} />}
     </>
   );
 }

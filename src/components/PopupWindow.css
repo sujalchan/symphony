@@ -41,6 +41,7 @@
   .popup-window.is-restoring { animation-duration: 1ms; }
 }
 .popup-window.is-focused {
+  z-index: 201;
   border-color: color-mix(in srgb, var(--text) 28%, transparent);
   box-shadow: 0 18px 60px rgba(0, 0, 0, 0.4);
 }
@@ -77,7 +78,7 @@
 .popup-window:not(.is-focused) .close-control { background: var(--grid-dot); }
 .popup-window:not(.is-focused) .minimize-control { background: var(--grid-dot); }
 
-.popup-window-body { min-height: 0; overflow-y: auto; }
+.popup-window-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
 
 .popup-window-resize {
   position: absolute;

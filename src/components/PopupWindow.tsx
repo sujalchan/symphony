@@ -24,12 +24,12 @@ type PopupWindowProps = {
   windowId?: string;
   uiScale: number;
   initialSize?: Size;
+  minSize?: Size;
 };
 
-const MIN_WIDTH = 280;
-const MIN_HEIGHT = 220;
+const DEFAULT_MIN_SIZE = { width: 280, height: 220 };
 
-export default function PopupWindow({ title, children, onClose, onMinimizeStart, onMinimize, minimized = false, windowId, uiScale, initialSize = { width: 360, height: 420 } }: PopupWindowProps) {
+export default function PopupWindow({ title, children, onClose, onMinimizeStart, onMinimize, minimized = false, windowId, uiScale, initialSize = { width: 360, height: 420 }, minSize = DEFAULT_MIN_SIZE }: PopupWindowProps) {
   const titleId = useId();
   const windowRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -56,8 +56,8 @@ export default function PopupWindow({ title, children, onClose, onMinimizeStart,
     const maxWidth = Math.max(0, available.width + 12 - at.x);
     const maxHeight = Math.max(0, available.height + 12 - at.y);
     return {
-      width: Math.min(Math.max(Math.min(MIN_WIDTH, maxWidth), next.width), maxWidth),
-      height: Math.min(Math.max(Math.min(MIN_HEIGHT, maxHeight), next.height), maxHeight),
+      width: Math.min(Math.max(Math.min(minSize.width, maxWidth), next.width), maxWidth),
+      height: Math.min(Math.max(Math.min(minSize.height, maxHeight), next.height), maxHeight),
     };
   }
 
@@ -227,7 +227,7 @@ export default function PopupWindow({ title, children, onClose, onMinimizeStart,
   const style = { width: size.width, height: size.height, ...(position ? { left: position.x, top: position.y } : {}) } as CSSProperties;
   return (
     <div ref={windowRef} className={`popup-window${position ? " is-positioned" : ""}${focused ? " is-focused" : ""}${motion !== "idle" ? ` is-${motion}` : ""}`}
-      role="dialog" aria-labelledby={titleId} style={style} hidden={minimized} onAnimationEnd={finishMotion}>
+      role="dialog" aria-labelledby={titleId} data-popup-id={windowId} style={style} hidden={minimized} onAnimationEnd={finishMotion}>
       <div className="popup-window-header" onPointerDown={(event) => beginGesture(event, "move")}>
         <span id={titleId}>{title}</span>
         <div className="popup-window-controls">

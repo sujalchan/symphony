@@ -1,0 +1,16 @@
+.symphony-mark {
+  display: block;
+  width: 28px;
+  height: 28px;
+  overflow: visible;
+  color: var(--accent);
+  transform: rotate(-45deg);
+}
+
+.symphony-mark path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 11;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
