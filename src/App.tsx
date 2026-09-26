@@ -93,6 +93,14 @@ function App() {
   const color = accent === "custom" ? customColor : presetColors[accent];
   const displayedColor = useRef<[number, number, number] | null>(null);
 
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    root.dataset.platform = /Linux/i.test(navigator.userAgent) ? "linux" : "other";
+    root.dataset.backdropFilter = CSS.supports("backdrop-filter", "blur(1px)") || CSS.supports("-webkit-backdrop-filter", "blur(1px)")
+      ? "supported"
+      : "unsupported";
+  }, []);
+
   useEffect(() => {
     const isMac = /Macintosh|Mac OS X/i.test(navigator.userAgent);
 

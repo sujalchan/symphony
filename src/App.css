@@ -54,6 +54,36 @@
   --chrome-background: var(--chrome-surface);
 }
 
+/* WebKitGTK can skip backdrop-filter unless the glass layer is promoted. */
+:root[data-platform="linux"][data-glass="on"] :is(
+  .navbar,
+  .workspace-tab-rail,
+  .zoom-toolbox,
+  .popup-window,
+  .popup-window-header,
+  .notepad-popup-body,
+  .notepad-menu,
+  .notepad-gutter,
+  .notepad-status,
+  .theme-mode-switch,
+  .theme-mode-thumb,
+  .settings-switch-track
+) {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  will-change: backdrop-filter;
+}
+
+/* Older WebKitGTK releases cannot blur a backdrop; retain a frosted surface instead. */
+:root[data-platform="linux"][data-glass="on"][data-backdrop-filter="unsupported"] {
+  --navbar-glass: color-mix(in srgb, var(--nav-bg) 88%, transparent);
+  --chrome-filter: saturate(125%);
+}
+
+:root[data-platform="linux"][data-glass="on"][data-backdrop-filter="unsupported"] .popup-window.is-focused {
+  background: color-mix(in srgb, var(--menu-bg) 88%, transparent);
+}
+
 html,
 body,
 #root {
