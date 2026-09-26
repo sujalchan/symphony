@@ -7,16 +7,16 @@ use tauri::{
 
 #[tauri::command]
 fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
+    return format!("Hello, {}! You've been greeted from Rust!", name);
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .setup(|app| {
+        .setup(|_app| {
             #[cfg(target_os = "macos")]
             {
-                let handle = app.handle();
+                let handle = _app.handle();
                 let app_menu = SubmenuBuilder::new(handle, "Symphony IDE")
                     .text("about", "About Symphony IDE")
                     .separator()
@@ -69,11 +69,11 @@ pub fn run() {
                         &help_menu,
                     ])
                     .build()?;
-                app.set_menu(menu)?;
-                app.on_menu_event(|app, event| {
+                _app.set_menu(menu)?;
+                _app.on_menu_event(|app, event| {
                     let id = event.id().0.as_str();
                     if matches!(id, "about" | "appearance" | "project-github") {
-                        let _ = app.emit("symphony-native-menu", id);
+                        let _ = _app.emit("symphony-native-menu", id);
                     }
                 });
             }

@@ -290,7 +290,8 @@
     box-shadow: 0 0 0 3px rgba(254, 188, 46, 0.18), 0 0 12px rgba(254, 188, 46, 0.55);
 }
 
-.minimize-control:disabled {
+.minimize-control:disabled,
+.fullscreen-control:disabled {
     background: #8b8981;
     cursor: default;
 }

@@ -1,10 +1,11 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import type { AnimationEvent, CSSProperties, KeyboardEvent, PointerEvent, ReactNode } from "react";
 import "./Navbar.css";
 import "./PopupWindow.css";
 
 type Position = { x: number; y: number };
 type Size = { width: number; height: number };
+type Geometry = { position: Position; size: Size };
 type Gesture = {
   kind: "move" | "resize";
   pointerId: number;
@@ -39,12 +40,19 @@ export default function PopupWindow({ title, children, onClose, onMinimizeStart,
   const stopListening = useRef<(() => void) | null>(null);
   const minimizePending = useRef(false);
   const rubberbandTimer = useRef<number | null>(null);
+  const geometryAnimationTimer = useRef<number | null>(null);
+  const dragSettleTimer = useRef<number | null>(null);
   const wasMinimized = useRef(minimized);
+  const maximizedRef = useRef(false);
+  const restoredGeometry = useRef<Geometry | null>(null);
   const [position, setPosition] = useState<Position | null>(null);
   const [size, setSize] = useState<Size>(initialSize);
   const [focused, setFocused] = useState(true);
   const [previewResizing, setPreviewResizing] = useState(false);
   const [rubberbanding, setRubberbanding] = useState(false);
+  const [maximized, setMaximized] = useState(false);
+  const [geometryAnimating, setGeometryAnimating] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const [motion, setMotion] = useState<"idle" | "minimizing" | "restoring">("idle");
   const scale = uiScale / 100;
 
@@ -74,6 +82,62 @@ export default function PopupWindow({ title, children, onClose, onMinimizeStart,
     };
   }
 
+  function toggleMaximized() {
+    if (!resizable) return;
+    const element = windowRef.current;
+    const root = element?.parentElement;
+    if (!element || !root) return;
+
+    if (maximizedRef.current) {
+      const restored = restoredGeometry.current;
+      if (restored) {
+        animateGeometry(() => {
+          setPosition(clampPosition(restored.position, restored.size));
+          setSize(restored.size);
+        });
+      }
+      maximizedRef.current = false;
+      setMaximized(false);
+      return;
+    }
+
+    const currentSize = { width: element.offsetWidth, height: element.offsetHeight };
+    const rootBounds = root.getBoundingClientRect();
+    const elementBounds = element.getBoundingClientRect();
+    restoredGeometry.current = {
+      position: position ?? {
+        x: (elementBounds.left - rootBounds.left) / scale,
+        y: (elementBounds.top - rootBounds.top) / scale,
+      },
+      size: currentSize,
+    };
+    const expand = () => {
+      maximizedRef.current = true;
+      animateGeometry(() => {
+        setPosition({ x: 12, y: 12 });
+        setSize(limits());
+        setMaximized(true);
+      });
+    };
+
+    if (position === null) {
+      setPosition(restoredGeometry.current.position);
+      requestAnimationFrame(() => requestAnimationFrame(expand));
+    } else {
+      expand();
+    }
+  }
+
+  function animateGeometry(update: () => void) {
+    if (geometryAnimationTimer.current !== null) window.clearTimeout(geometryAnimationTimer.current);
+    setGeometryAnimating(true);
+    requestAnimationFrame(update);
+    geometryAnimationTimer.current = window.setTimeout(() => {
+      geometryAnimationTimer.current = null;
+      setGeometryAnimating(false);
+    }, 320);
+  }
+
   useEffect(() => {
     closeRef.current?.focus();
     const onPointerDown = (event: globalThis.PointerEvent) => {
@@ -89,10 +153,12 @@ export default function PopupWindow({ title, children, onClose, onMinimizeStart,
       document.removeEventListener("focusin", onFocusIn, true);
       stopListening.current?.();
       if (rubberbandTimer.current !== null) window.clearTimeout(rubberbandTimer.current);
+      if (geometryAnimationTimer.current !== null) window.clearTimeout(geometryAnimationTimer.current);
+      if (dragSettleTimer.current !== null) window.clearTimeout(dragSettleTimer.current);
     };
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (minimized) {
       setMotion("idle");
     } else {
@@ -152,6 +218,11 @@ export default function PopupWindow({ title, children, onClose, onMinimizeStart,
     if (!element || !root) return;
     const observer = new ResizeObserver(() => {
       const available = limits();
+      if (maximizedRef.current) {
+        setPosition({ x: 12, y: 12 });
+        setSize(available);
+        return;
+      }
       setSize((current) => ({
         width: Math.min(current.width, available.width),
         height: Math.min(current.height, available.height),
@@ -166,7 +237,7 @@ export default function PopupWindow({ title, children, onClose, onMinimizeStart,
   }, []);
 
   function beginGesture(event: PointerEvent<HTMLElement>, kind: Gesture["kind"]) {
-    if (event.button !== 0 || !event.isPrimary || (kind === "move" && event.target instanceof Element && event.target.closest("button"))) return;
+    if (dragSettleTimer.current !== null || maximizedRef.current || event.button !== 0 || !event.isPrimary || (kind === "move" && event.target instanceof Element && event.target.closest("button"))) return;
     const element = windowRef.current;
     const root = element?.parentElement;
     if (!element || !root) return;
@@ -183,10 +254,14 @@ export default function PopupWindow({ title, children, onClose, onMinimizeStart,
       window.clearTimeout(rubberbandTimer.current);
       rubberbandTimer.current = null;
     }
-    gesture.current = { kind, pointerId: event.pointerId, clientX: event.clientX, clientY: event.clientY, position: start, size: currentSize };
+    gesture.current = {
+      kind, pointerId: event.pointerId, clientX: event.clientX, clientY: event.clientY,
+      position: start, size: currentSize,
+    };
     setPosition(start);
     setSize(currentSize);
     if (kind === "move") {
+      setDragging(true);
       element.style.left = `${start.x}px`;
       element.style.top = `${start.y}px`;
       element.style.willChange = "transform";
@@ -221,11 +296,17 @@ export default function PopupWindow({ title, children, onClose, onMinimizeStart,
       stopListening.current?.();
       if (current.kind === "move") {
         const next = draggedPosition(pointer, current);
-        element.style.left = `${next.x}px`;
-        element.style.top = `${next.y}px`;
-        element.style.transform = "";
-        element.style.willChange = "";
-        setPosition(next);
+        element.style.transform = `translate3d(${next.x - current.position.x}px, ${next.y - current.position.y}px, 0)`;
+        const settleDelay = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 390;
+        dragSettleTimer.current = window.setTimeout(() => {
+          dragSettleTimer.current = null;
+          element.style.left = `${next.x}px`;
+          element.style.top = `${next.y}px`;
+          element.style.transform = "";
+          element.style.willChange = "";
+          setPosition(next);
+          setDragging(false);
+        }, settleDelay);
       }
       if (!resizable && current.kind === "resize") {
         setPreviewResizing(false);
@@ -280,11 +361,14 @@ export default function PopupWindow({ title, children, onClose, onMinimizeStart,
     ...(position ? { left: position.x, top: position.y } : {}),
   } as CSSProperties;
   return (
-    <div ref={windowRef} className={`popup-window${position ? " is-positioned" : ""}${focused ? " is-focused" : ""}${motion !== "idle" ? ` is-${motion}` : ""}${!resizable ? " is-non-resizable" : ""}${previewResizing ? " is-preview-resizing" : ""}${rubberbanding ? " is-rubberbanding" : ""}`}
+    <div ref={windowRef} className={`popup-window${position ? " is-positioned" : ""}${focused ? " is-focused" : ""}${motion !== "idle" ? ` is-${motion}` : ""}${!resizable ? " is-non-resizable" : ""}${maximized ? " is-maximized" : ""}${geometryAnimating ? " is-geometry-animating" : ""}${dragging ? " is-dragging" : ""}${previewResizing ? " is-preview-resizing" : ""}${rubberbanding ? " is-rubberbanding" : ""}`}
       role="dialog" aria-labelledby={titleId} data-popup-id={windowId} style={style} hidden={minimized} onAnimationEnd={finishMotion}>
       <div className="popup-window-header" onPointerDown={(event) => beginGesture(event, "move")}>
         <span id={titleId}>{title}</span>
         <div className="popup-window-controls">
+          <button className="window-control fullscreen-control" type="button" disabled={!resizable}
+            aria-label={`${maximized ? "Restore" : "Expand"} ${title}`} data-label={`${maximized ? "Restore" : "Expand"} ${title}`}
+            aria-pressed={maximized} onClick={toggleMaximized} />
           {onMinimize && <button className="window-control minimize-control" type="button"
             aria-label={`Minimize ${title}`} data-label={`Minimize ${title}`} onClick={minimizeWindow} />}
           <button ref={closeRef} className="window-control close-control" type="button"
