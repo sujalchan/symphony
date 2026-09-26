@@ -12,14 +12,15 @@ export const presetColors = {
 
 export type PresetAccent = keyof typeof presetColors;
 export type Accent = PresetAccent | "custom";
+export type ThemePreference = "system" | "dark" | "light";
 export type ColorProfile = { id: string; name: string; color: string };
 
 export const presetNames: Record<PresetAccent, string> = {
-  blue: "Pacific Blue",
+  blue: "Pacific",
   violet: "Orchid",
   teal: "Lagoon",
-  amber: "Golden Hour",
-  grey: "Graphite Grey",
+  amber: "Sunset",
+  grey: "Graphite",
   coral: "Papaya",
   rose: "Petal",
   sage: "Sage",

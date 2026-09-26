@@ -12,7 +12,7 @@ export default function WorkspacePanel({ collapsed, activeTab, settings }: {
   settings: AppearanceSettingsProps;
 }) {
   return (
-    <aside className="workspace-panel" id="workspace-panel" aria-label="Workspace tools" aria-hidden={collapsed} inert={collapsed}>
+    <aside className={activeTab === "settings" ? "workspace-panel is-settings" : "workspace-panel"} id="workspace-panel" aria-label="Workspace tools" aria-hidden={collapsed} inert={collapsed}>
       {activeTab === "code" && <CodePanel />}
       {activeTab === "costume" && <CostumePanel />}
       {activeTab === "sounds" && <SoundsPanel />}

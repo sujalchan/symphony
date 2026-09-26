@@ -2,10 +2,11 @@ import { useEffect, useId, useState } from "react";
 import AppearanceControls from "./AppearanceControls";
 import type { ColorThemeSettingsProps } from "./ColorThemeSettings";
 import type { UiScaleSettingProps } from "./UiScaleSetting";
+import type { ThemePreference } from "../../theme";
 
 export type AppearanceSettingsProps = ColorThemeSettingsProps & UiScaleSettingProps & {
-  theme: "dark" | "light";
-  onThemeToggle: () => void;
+  themePreference: ThemePreference;
+  onThemePreferenceChange: (theme: ThemePreference) => void;
   glass: boolean;
   onGlassChange: (enabled: boolean) => void;
   popupTransparency: number;

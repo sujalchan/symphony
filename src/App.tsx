@@ -13,7 +13,7 @@ import WorkspaceTabs from "./components/WorkspaceTabs";
 import type { WorkspaceTab } from "./components/WorkspaceTabs";
 import type { AppearanceSettingsProps } from "./components/settings/AppearanceSettings";
 import { accentChoices, isHexColor, presetColors, readColorProfiles } from "./theme";
-import type { Accent, ColorProfile } from "./theme";
+import type { Accent, ColorProfile, ThemePreference } from "./theme";
 import "./App.css";
 
 function storedChoice<T extends string>(key: string, choices: readonly T[], fallback: T): T {
@@ -56,7 +56,8 @@ function storedPopupTransparency(): number {
 }
 
 function App() {
-  const [theme, setTheme] = useState<"dark" | "light">(() => storedChoice("symphony-theme", ["dark", "light"], "dark"));
+  const [themePreference, setThemePreference] = useState<ThemePreference>(() => storedChoice("symphony-theme", ["system", "dark", "light"], "dark"));
+  const [systemDark, setSystemDark] = useState(() => window.matchMedia("(prefers-color-scheme: dark)").matches);
   const [accent, setAccent] = useState<Accent>(() => storedChoice("symphony-accent", accentChoices, "grey"));
   const [customColor, setCustomColor] = useState(() => {
     try {
@@ -98,13 +99,24 @@ function App() {
   }, []);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
+    const colorScheme = window.matchMedia("(prefers-color-scheme: dark)");
+    const onSystemThemeChange = (event: MediaQueryListEvent) => setSystemDark(event.matches);
+    colorScheme.addEventListener("change", onSystemThemeChange);
+    setSystemDark(colorScheme.matches);
+    return () => colorScheme.removeEventListener("change", onSystemThemeChange);
+  }, []);
+
+  useLayoutEffect(() => {
+    document.documentElement.dataset.theme = themePreference === "system" ? (systemDark ? "dark" : "light") : themePreference;
+  }, [themePreference, systemDark]);
+
+  useEffect(() => {
     try {
-      localStorage.setItem("symphony-theme", theme);
+      localStorage.setItem("symphony-theme", themePreference);
     } catch {
       // Keep theme switching available when storage is unavailable.
     }
-  }, [theme]);
+  }, [themePreference]);
 
   useLayoutEffect(() => {
     document.documentElement.dataset.navbarAutoHide = autoHideNavbar ? "on" : "off";
@@ -249,10 +261,6 @@ function App() {
     return () => observer.disconnect();
   }, []);
 
-  function toggleTheme() {
-    setTheme((current) => current === "dark" ? "light" : "dark");
-  }
-
   function addMinimizedWindow(id: string, title: string) {
     setMinimizedWindows((current) => [...current.filter((window) => window.id !== id), { id, title }]);
   }
@@ -388,7 +396,7 @@ function App() {
 
 
   const appearanceSettings: AppearanceSettingsProps = {
-    theme, onThemeToggle: toggleTheme,
+    themePreference, onThemePreferenceChange: setThemePreference,
     accent, onAccentChange: selectPreset, color, onColorChange: chooseColor,
     savedProfiles, selectedProfileId, onProfileSelect: selectProfile,
     onProfileSave: saveProfile, onProfileDelete: deleteProfile,

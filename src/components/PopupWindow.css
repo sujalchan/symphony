@@ -115,16 +115,18 @@
 
 .popup-window.is-focused .popup-window-header {
   border-bottom-color: var(--navbar-edge);
-  background: var(--chrome-background);
+  background: linear-gradient(100deg, color-mix(in srgb, var(--accent) 10%, var(--nav-bg)), var(--nav-bg) 75%);
   -webkit-backdrop-filter: var(--chrome-filter);
   backdrop-filter: var(--chrome-filter);
   color: var(--text-strong);
 }
 
+:root[data-gradients="off"] .popup-window.is-focused .popup-window-header {
+  background: var(--nav-bg);
+}
+
 :root[data-glass="on"] .popup-window.is-focused .popup-window-header {
-  background:
-    radial-gradient(ellipse 80% 150% at 18% -35%, color-mix(in srgb, var(--navbar-glow) var(--popup-background-opacity), transparent), transparent 85%),
-    linear-gradient(115deg, color-mix(in srgb, rgba(255, 255, 255, 0.07) var(--popup-background-opacity), transparent), transparent 65%);
+  background: linear-gradient(100deg, color-mix(in srgb, var(--accent-soft) var(--popup-background-opacity), transparent), transparent 75%);
 }
 
 :root[data-glass="on"][data-gradients="off"] .popup-window.is-focused .popup-window-header {

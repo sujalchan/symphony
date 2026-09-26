@@ -24,7 +24,7 @@ export default function ColorThemeSettings({ accent, onAccentChange, color, onCo
   return (
     <>
       <fieldset className="settings-option accent-options">
-        <legend>Color theme</legend>
+        <legend>Preset colors</legend>
         <div className="accent-choices">
           {accents.map((choice) => (
             <label key={choice} className="accent-choice">

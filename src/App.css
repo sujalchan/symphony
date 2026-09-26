@@ -8,6 +8,9 @@
   --menu-bg: #303030;
   --grid-bg: #1b1b1b;
   --grid-dot: #575757;
+  --switch-off: #74857d;
+  --switch-on: #279a68;
+  --switch-thumb: #f6fff9;
   --text: #e7e7e7;
   --text-strong: #ffffff;
   --border: rgba(255, 255, 255, 0.1);
@@ -31,6 +34,8 @@
   --menu-bg: #ffffff;
   --grid-bg: #fafafa;
   --grid-dot: #b8bcc4;
+  --switch-off: #7b897f;
+  --switch-on: #187f55;
   --text: #30343b;
   --text-strong: #111318;
   --border: rgba(0, 0, 0, 0.12);

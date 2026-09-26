@@ -1,32 +1,31 @@
-import ColorThemeSettings from "./ColorThemeSettings";
-import PopupTransparencySetting from "./PopupTransparencySetting";
-import UiScaleSetting from "./UiScaleSetting";
+import { useState } from "react";
+import AppearanceSearch from "./AppearanceSearch";
+import { buildAppearanceSections } from "./AppearanceSections";
+import { appearanceSearchTerms, matchesAppearanceSection } from "./appearanceMatching";
+import AppearanceSubmenu from "./AppearanceSubmenu";
 import type { AppearanceSettingsProps } from "./AppearanceSettings";
 
 export default function AppearanceControls(props: AppearanceSettingsProps) {
+  const [search, setSearch] = useState("");
+  const terms = appearanceSearchTerms(search);
+  const searching = terms.length > 0;
+  const sections = buildAppearanceSections(props).map((section) => ({
+    ...section,
+    visible: matchesAppearanceSection(section, terms),
+  }));
+
   return (
     <div className="appearance-settings-body">
-      <div className="settings-option">
-        <span>Mode</span>
-        <button type="button" onClick={props.onThemeToggle}>{props.theme === "dark" ? "Dark mode" : "Light mode"}</button>
-      </div>
-
-      <ColorThemeSettings {...props} />
-
-      <label className="settings-option settings-toggle">
-        <span>Glass surfaces</span>
-        <input type="checkbox" checked={props.glass} onChange={(event) => props.onGlassChange(event.target.checked)} />
-      </label>
-      <PopupTransparencySetting value={props.popupTransparency} onChange={props.onPopupTransparencyChange} glass={props.glass} />
-      <label className="settings-option settings-toggle">
-        <span>Gradients and glow</span>
-        <input type="checkbox" checked={props.gradients} onChange={(event) => props.onGradientsChange(event.target.checked)} />
-      </label>
-      <label className="settings-option settings-toggle">
-        <span>Automatically hide navbar</span>
-        <input type="checkbox" checked={props.autoHideNavbar} onChange={(event) => props.onAutoHideNavbarChange(event.target.checked)} />
-      </label>
-      <UiScaleSetting {...props} />
+      <AppearanceSearch value={search} onChange={setSearch} />
+      {sections.map((section) => (
+        <AppearanceSubmenu key={section.id} title={section.title} visible={section.visible}
+          forceExpanded={searching && section.visible}>
+          {section.content}
+        </AppearanceSubmenu>
+      ))}
+      {searching && !sections.some((section) => section.visible) && (
+        <p className="appearance-search-empty" role="status">No appearance settings found.</p>
+      )}
     </div>
   );
 }

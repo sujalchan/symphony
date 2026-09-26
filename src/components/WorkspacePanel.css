@@ -7,6 +7,15 @@
   overflow-y: auto;
 }
 
+.workspace-panel.is-settings {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.workspace-panel.is-settings::-webkit-scrollbar {
+  display: none;
+}
+
 .workspace-panel-content {
   padding: 16px;
 }
