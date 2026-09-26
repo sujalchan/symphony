@@ -1,13 +1,13 @@
 export const presetColors = {
-  blue: "#74a8ff",
-  violet: "#b392ff",
-  teal: "#66d6c6",
-  amber: "#f2bb66",
-  grey: "#a6a9af",
   coral: "#ff967f",
   rose: "#f3a3c7",
+  amber: "#f2bb66",
   sage: "#91d5a2",
+  teal: "#66d6c6",
+  blue: "#74a8ff",
   indigo: "#909cf4",
+  violet: "#b392ff",
+  grey: "#a6a9af",
 } as const;
 
 export type PresetAccent = keyof typeof presetColors;
@@ -16,15 +16,15 @@ export type ThemePreference = "system" | "dark" | "light";
 export type ColorProfile = { id: string; name: string; color: string };
 
 export const presetNames: Record<PresetAccent, string> = {
-  blue: "Pacific",
-  violet: "Orchid",
-  teal: "Lagoon",
-  amber: "Sunset",
-  grey: "Graphite",
   coral: "Papaya",
   rose: "Petal",
+  amber: "Sunset",
   sage: "Sage",
+  teal: "Lagoon",
+  blue: "Pacific",
   indigo: "Twilight",
+  violet: "Orchid",
+  grey: "Smoke",
 };
 
 export const accentChoices: readonly Accent[] = [...(Object.keys(presetColors) as PresetAccent[]), "custom"];
