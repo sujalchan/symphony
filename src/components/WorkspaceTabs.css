@@ -17,6 +17,11 @@
     0 8px 24px rgba(0, 0, 0, 0.16);
   -webkit-backdrop-filter: var(--chrome-filter);
   backdrop-filter: var(--chrome-filter);
+  transition: top 240ms ease;
+}
+
+:root[data-navbar-auto-hide="on"] .workspace-tab-rail {
+  top: 12px;
 }
 
 :root[data-glass="off"] .workspace-tab-rail {
@@ -73,10 +78,6 @@
 @keyframes rail-breathe {
   0%, 100% { opacity: 0.35; }
   50% { opacity: 0.85; }
-}
-
-.window-fullscreen .workspace-tab-rail {
-  top: 12px;
 }
 
 .workspace-tab-group {
@@ -157,6 +158,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .workspace-tab-rail {
+    transition: none;
+  }
+
   .workspace-tab-indicator,
   .workspace-tab-rail::before {
     transition: none;

@@ -1,7 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties, PointerEvent } from "react";
 import { isTauri } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import Grid from "./components/Grid";
 import AboutWindow from "./components/AboutWindow";
 import AppearanceWindow from "./components/AppearanceWindow";
@@ -32,6 +34,16 @@ function storedUiScale(): number {
   }
 }
 
+function storedAutoHideNavbar(): boolean {
+  try {
+    const saved = localStorage.getItem("symphony-auto-hide-navbar");
+    if (saved === "on" || saved === "off") return saved === "on";
+    return localStorage.getItem("symphony-app-navbar") === "off";
+  } catch {
+    return false;
+  }
+}
+
 function App() {
   const [theme, setTheme] = useState<"dark" | "light">(() => storedChoice("symphony-theme", ["dark", "light"], "dark"));
   const [accent, setAccent] = useState<Accent>(() => storedChoice("symphony-accent", accentChoices, "grey"));
@@ -50,6 +62,7 @@ function App() {
   });
   const [glass, setGlass] = useState(() => storedChoice("symphony-glass", ["on", "off"], "on") === "on");
   const [gradients, setGradients] = useState(() => storedChoice("symphony-gradients", ["on", "off"], "on") === "on");
+  const [autoHideNavbar, setAutoHideNavbar] = useState(storedAutoHideNavbar);
   const [uiScale, setUiScale] = useState(storedUiScale);
   const color = accent === "custom" ? customColor : presetColors[accent];
   const displayedColor = useRef<[number, number, number] | null>(null);
@@ -80,6 +93,10 @@ function App() {
       // Keep theme switching available when storage is unavailable.
     }
   }, [theme]);
+
+  useLayoutEffect(() => {
+    document.documentElement.dataset.navbarAutoHide = autoHideNavbar ? "on" : "off";
+  }, [autoHideNavbar]);
 
   useLayoutEffect(() => {
     const target: [number, number, number] = [1, 3, 5].map((index) => parseInt(color.slice(index, index + 2), 16)) as [number, number, number];
@@ -122,11 +139,13 @@ function App() {
       else localStorage.removeItem("symphony-selected-color-profile");
       localStorage.setItem("symphony-glass", glass ? "on" : "off");
       localStorage.setItem("symphony-gradients", gradients ? "on" : "off");
+      localStorage.setItem("symphony-auto-hide-navbar", autoHideNavbar ? "on" : "off");
+      localStorage.removeItem("symphony-app-navbar");
       localStorage.setItem("symphony-ui-scale", String(uiScale));
     } catch {
       // Appearance settings still work for this session.
     }
-  }, [accent, color, customColor, savedProfiles, selectedProfileId, glass, gradients, uiScale]);
+  }, [accent, color, customColor, savedProfiles, selectedProfileId, glass, gradients, autoHideNavbar, uiScale]);
 
   function selectPreset(choice: Accent) {
     setAccent(choice);
@@ -232,6 +251,34 @@ function App() {
     requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('[data-popup-id="about"] .close-control')?.focus());
   }
 
+  useEffect(() => {
+    if (!isTauri()) return;
+
+    let disposed = false;
+    let stopListening: (() => void) | undefined;
+    void listen<string>("symphony-native-menu", ({ payload }) => {
+      switch (payload) {
+        case "about":
+          openAboutWindow();
+          break;
+        case "appearance":
+          openAppearanceWindow();
+          break;
+        case "project-github":
+          void openUrl("https://github.com/sujalchan/symphony");
+          break;
+      }
+    }).then((unlisten) => {
+      if (disposed) unlisten();
+      else stopListening = unlisten;
+    });
+
+    return () => {
+      disposed = true;
+      stopListening?.();
+    };
+  }, []);
+
   function minimizeAppearanceWindow() {
     setIsAppearanceWindowMinimizing(false);
     setIsAppearanceWindowMinimized(true);
@@ -325,12 +372,13 @@ function App() {
     savedProfiles, selectedProfileId, onProfileSelect: selectProfile,
     onProfileSave: saveProfile, onProfileDelete: deleteProfile,
     glass, onGlassChange: setGlass, gradients, onGradientsChange: setGradients,
+    autoHideNavbar, onAutoHideNavbarChange: setAutoHideNavbar,
     uiScale, onUiScaleChange: setUiScale,
   };
 
   return (
     <>
-      <Navbar isFullscreen={isFullscreen} onFullscreenChange={setIsFullscreen}
+      <Navbar isFullscreen={isFullscreen} autoHideNavbar={autoHideNavbar} onFullscreenChange={setIsFullscreen}
         onAboutOpen={openAboutWindow}
         onAppearanceOpen={openAppearanceWindow}
         minimizedWindows={[

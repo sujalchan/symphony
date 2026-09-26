@@ -99,7 +99,12 @@ body {
   height: calc(100% - 40px);
   margin-top: 40px;
   padding: 12px 12px 12px 68px;
-  transition: grid-template-columns 240ms ease;
+  transition: grid-template-columns 240ms ease, height 240ms ease, margin-top 240ms ease;
+}
+
+:root[data-navbar-auto-hide="on"] .app-content {
+  height: 100%;
+  margin-top: 0;
 }
 
 .app-content.is-resizing {
@@ -173,11 +178,6 @@ body {
   .app-content {
     transition: none;
   }
-}
-
-.window-fullscreen .app-content {
-  height: 100%;
-  margin-top: 0;
 }
 
 button,

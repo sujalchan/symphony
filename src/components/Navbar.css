@@ -84,14 +84,17 @@
     cursor: default;
 }
 
-.window-fullscreen .navbar {
-    border-radius: 0;
+.navbar.is-autohidden {
     transform: translateY(calc(-100% - 4px));
     pointer-events: none;
 }
 
-.window-fullscreen .navbar.is-revealed,
-.window-fullscreen .navbar:focus-within {
+.window-fullscreen .navbar {
+    border-radius: 0;
+}
+
+.navbar.is-autohidden.is-revealed,
+.navbar.is-autohidden:focus-within {
     transform: translateY(0);
     pointer-events: auto;
 }

@@ -81,8 +81,8 @@
 
 :root[data-glass="on"] .popup-window.is-focused {
   background: color-mix(in srgb, var(--menu-bg) 50%, transparent);
-  -webkit-backdrop-filter: blur(10px) saturate(125%);
-  backdrop-filter: blur(10px) saturate(125%);
+  -webkit-backdrop-filter: blur(4px) saturate(125%);
+  backdrop-filter: blur(4px) saturate(125%);
 }
 
 .popup-window.is-preview-resizing {

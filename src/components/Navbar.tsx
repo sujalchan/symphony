@@ -13,6 +13,7 @@ function isInteractiveTarget(event: MouseEvent<HTMLElement>) {
 
 type NavbarProps = {
     isFullscreen: boolean;
+    autoHideNavbar: boolean;
     onFullscreenChange: (isFullscreen: boolean) => void;
     onAboutOpen: () => void;
     onAppearanceOpen: () => void;
@@ -21,7 +22,7 @@ type NavbarProps = {
     uiScale: number;
 };
 
-export default function Navbar({ isFullscreen, onFullscreenChange, onAboutOpen, onAppearanceOpen, minimizedWindows, onWindowRestore, uiScale }: NavbarProps) {
+export default function Navbar({ isFullscreen, autoHideNavbar, onFullscreenChange, onAboutOpen, onAppearanceOpen, minimizedWindows, onWindowRestore, uiScale }: NavbarProps) {
     const appWindow = isTauri() ? getCurrentWindow() : null;
     const [openMenu, setOpenMenu] = useState<"file" | "project" | "window" | "help" | null>(null);
     const [navbarVisible, setNavbarVisible] = useState(false);
@@ -57,16 +58,16 @@ export default function Navbar({ isFullscreen, onFullscreenChange, onAboutOpen, 
     }, [minimizedWindows]);
 
     useEffect(() => {
-        if (!isFullscreen) {
+        if (!autoHideNavbar) {
             setNavbarVisible(false);
             return;
         }
 
         function revealAtTop(event: globalThis.PointerEvent) {
             if (event.pointerType !== "mouse") return;
-            if (event.clientY <= 12) {
+            if (event.clientY <= 12 * (uiScale / 100)) {
                 setNavbarVisible(true);
-            } else if (event.clientY > 48 &&
+            } else if (event.clientY > 48 * (uiScale / 100) &&
                 !(event.target instanceof Element && event.target.closest(".navbar"))) {
                 setNavbarVisible(false);
                 setOpenMenu(null);
@@ -75,7 +76,7 @@ export default function Navbar({ isFullscreen, onFullscreenChange, onAboutOpen, 
 
         document.addEventListener("pointermove", revealAtTop);
         return () => document.removeEventListener("pointermove", revealAtTop);
-    }, [isFullscreen]);
+    }, [autoHideNavbar, uiScale]);
 
     useEffect(() => {
         function closeOutside(event: globalThis.PointerEvent) {
@@ -109,7 +110,7 @@ export default function Navbar({ isFullscreen, onFullscreenChange, onAboutOpen, 
 
     return (
         <nav
-            className={`navbar${isFullscreen && navbarVisible ? " is-revealed" : ""}`}
+            className={`navbar${autoHideNavbar ? " is-autohidden" : ""}${autoHideNavbar && navbarVisible ? " is-revealed" : ""}`}
             onPointerMove={(event) => {
                 if (event.pointerType !== "mouse") return;
                 const navbar = event.currentTarget;

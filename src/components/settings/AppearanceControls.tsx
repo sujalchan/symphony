@@ -20,6 +20,10 @@ export default function AppearanceControls(props: AppearanceSettingsProps) {
         <span>Gradients and glow</span>
         <input type="checkbox" checked={props.gradients} onChange={(event) => props.onGradientsChange(event.target.checked)} />
       </label>
+      <label className="settings-option settings-toggle">
+        <span>Automatically hide navbar</span>
+        <input type="checkbox" checked={props.autoHideNavbar} onChange={(event) => props.onAutoHideNavbarChange(event.target.checked)} />
+      </label>
       <UiScaleSetting {...props} />
     </div>
   );

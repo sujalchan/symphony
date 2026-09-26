@@ -10,6 +10,8 @@ export type AppearanceSettingsProps = ColorThemeSettingsProps & UiScaleSettingPr
   onGlassChange: (enabled: boolean) => void;
   gradients: boolean;
   onGradientsChange: (enabled: boolean) => void;
+  autoHideNavbar: boolean;
+  onAutoHideNavbarChange: (enabled: boolean) => void;
 };
 
 function storedExpanded(): boolean {
