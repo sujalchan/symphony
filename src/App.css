@@ -70,7 +70,7 @@ body {
   grid-template-columns: minmax(0, min(var(--panel-width, max(320px, 25%)), calc(100% - 216px))) 16px minmax(0, 1fr);
   height: calc(100% - 40px);
   margin-top: 40px;
-  padding: 12px;
+  padding: 12px 12px 12px 64px;
   transition: grid-template-columns 240ms ease;
 }
 
