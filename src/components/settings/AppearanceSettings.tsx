@@ -11,6 +11,8 @@ export type AppearanceSettingsProps = ColorThemeSettingsProps & UiScaleSettingPr
   onGlassChange: (enabled: boolean) => void;
   popupTransparency: number;
   onPopupTransparencyChange: (value: number) => void;
+  popupGlide: number;
+  onPopupGlideChange: (value: number) => void;
   gradients: boolean;
   onGradientsChange: (enabled: boolean) => void;
   autoHideNavbar: boolean;

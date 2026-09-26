@@ -3,10 +3,11 @@ import type { CSSProperties, PointerEvent } from "react";
 import { isTauri } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { openUrl } from "@tauri-apps/plugin-opener";
 import Grid from "./components/Grid";
 import AboutWindow from "./components/AboutWindow";
 import AppearanceWindow from "./components/AppearanceWindow";
+import GitHubWindow from "./components/GitHubWindow";
+import NotepadWindow from "./components/NotepadWindow";
 import Navbar from "./components/Navbar";
 import WorkspacePanel from "./components/WorkspacePanel";
 import WorkspaceTabs from "./components/WorkspaceTabs";
@@ -55,6 +56,17 @@ function storedPopupTransparency(): number {
   }
 }
 
+function storedPopupGlide(): number {
+  try {
+    const stored = localStorage.getItem("symphony-popup-glide");
+    if (stored === null) return 400;
+    const saved = Number(stored);
+    return Number.isInteger(saved) && saved >= 0 && saved <= 800 ? saved : 400;
+  } catch {
+    return 400;
+  }
+}
+
 function App() {
   const [themePreference, setThemePreference] = useState<ThemePreference>(() => storedChoice("symphony-theme", ["system", "dark", "light"], "dark"));
   const [systemDark, setSystemDark] = useState(() => window.matchMedia("(prefers-color-scheme: dark)").matches);
@@ -74,6 +86,7 @@ function App() {
   });
   const [glass, setGlass] = useState(() => storedChoice("symphony-glass", ["on", "off"], "on") === "on");
   const [popupTransparency, setPopupTransparency] = useState(storedPopupTransparency);
+  const [popupGlide, setPopupGlide] = useState(storedPopupGlide);
   const [gradients, setGradients] = useState(() => storedChoice("symphony-gradients", ["on", "off"], "on") === "on");
   const [autoHideNavbar, setAutoHideNavbar] = useState(storedAutoHideNavbar);
   const [uiScale, setUiScale] = useState(storedUiScale);
@@ -167,6 +180,7 @@ function App() {
       else localStorage.removeItem("symphony-selected-color-profile");
       localStorage.setItem("symphony-glass", glass ? "on" : "off");
       localStorage.setItem("symphony-popup-transparency", String(popupTransparency));
+      localStorage.setItem("symphony-popup-glide", String(popupGlide));
       localStorage.setItem("symphony-gradients", gradients ? "on" : "off");
       localStorage.setItem("symphony-auto-hide-navbar", autoHideNavbar ? "on" : "off");
       localStorage.removeItem("symphony-app-navbar");
@@ -174,7 +188,7 @@ function App() {
     } catch {
       // Appearance settings still work for this session.
     }
-  }, [accent, color, customColor, savedProfiles, selectedProfileId, glass, popupTransparency, gradients, autoHideNavbar, uiScale]);
+  }, [accent, color, customColor, savedProfiles, selectedProfileId, glass, popupTransparency, popupGlide, gradients, autoHideNavbar, uiScale]);
 
   function selectPreset(choice: Accent) {
     setAccent(choice);
@@ -218,6 +232,10 @@ function App() {
   const [isAppearanceWindowMinimized, setIsAppearanceWindowMinimized] = useState(false);
   const [isAboutWindowOpen, setIsAboutWindowOpen] = useState(false);
   const [isAboutWindowMinimized, setIsAboutWindowMinimized] = useState(false);
+  const [isGitHubWindowOpen, setIsGitHubWindowOpen] = useState(false);
+  const [isGitHubWindowMinimized, setIsGitHubWindowMinimized] = useState(false);
+  const [isNotepadWindowOpen, setIsNotepadWindowOpen] = useState(false);
+  const [isNotepadWindowMinimized, setIsNotepadWindowMinimized] = useState(false);
   const [minimizedWindows, setMinimizedWindows] = useState<Array<{ id: string; title: string }>>([]);
   const [panelWidth, setPanelWidth] = useState<number | null>(null);
   const [isResizing, setIsResizing] = useState(false);
@@ -283,6 +301,20 @@ function App() {
     requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('[data-popup-id="about"] .close-control')?.focus());
   }
 
+  function openGitHubWindow() {
+    setIsGitHubWindowMinimized(false);
+    removeMinimizedWindow("github");
+    setIsGitHubWindowOpen(true);
+    requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('[data-popup-id="github"] .close-control')?.focus());
+  }
+
+  function openNotepadWindow() {
+    setIsNotepadWindowMinimized(false);
+    removeMinimizedWindow("notepad");
+    setIsNotepadWindowOpen(true);
+    requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('[data-popup-id="notepad"] .close-control')?.focus());
+  }
+
   useEffect(() => {
     if (!isTauri()) return;
 
@@ -296,8 +328,11 @@ function App() {
         case "appearance":
           openAppearanceWindow();
           break;
+        case "notepad":
+          openNotepadWindow();
+          break;
         case "project-github":
-          void openUrl("https://github.com/sujalchan/symphony");
+          openGitHubWindow();
           break;
       }
     }).then((unlisten) => {
@@ -327,6 +362,22 @@ function App() {
     addMinimizedWindow("about", "About Symphony IDE");
   }
 
+  function minimizeGitHubWindow() {
+    setIsGitHubWindowMinimized(true);
+  }
+
+  function startMinimizingGitHubWindow() {
+    addMinimizedWindow("github", "Project GitHub");
+  }
+
+  function minimizeNotepadWindow() {
+    setIsNotepadWindowMinimized(true);
+  }
+
+  function startMinimizingNotepadWindow() {
+    addMinimizedWindow("notepad", "Notepad");
+  }
+
   function restoreWindow(id: string) {
     removeMinimizedWindow(id);
     if (id === "appearance") {
@@ -334,6 +385,12 @@ function App() {
     }
     if (id === "about") {
       setIsAboutWindowMinimized(false);
+    }
+    if (id === "github") {
+      setIsGitHubWindowMinimized(false);
+    }
+    if (id === "notepad") {
+      setIsNotepadWindowMinimized(false);
     }
   }
 
@@ -349,6 +406,20 @@ function App() {
     removeMinimizedWindow("about");
     setIsAboutWindowOpen(false);
     requestAnimationFrame(() => document.querySelector<HTMLButtonElement>(".about-menu-button")?.focus());
+  }
+
+  function closeGitHubWindow() {
+    setIsGitHubWindowMinimized(false);
+    removeMinimizedWindow("github");
+    setIsGitHubWindowOpen(false);
+    requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('[aria-controls="help-dropdown"]')?.focus());
+  }
+
+  function closeNotepadWindow() {
+    setIsNotepadWindowMinimized(false);
+    removeMinimizedWindow("notepad");
+    setIsNotepadWindowOpen(false);
+    requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('[aria-controls="window-dropdown"]')?.focus());
   }
 
   useEffect(() => {
@@ -401,6 +472,7 @@ function App() {
     savedProfiles, selectedProfileId, onProfileSelect: selectProfile,
     onProfileSave: saveProfile, onProfileDelete: deleteProfile,
     glass, onGlassChange: setGlass, popupTransparency, onPopupTransparencyChange: setPopupTransparency,
+    popupGlide, onPopupGlideChange: setPopupGlide,
     gradients, onGradientsChange: setGradients,
     autoHideNavbar, onAutoHideNavbarChange: setAutoHideNavbar,
     uiScale, onUiScaleChange: setUiScale,
@@ -411,6 +483,8 @@ function App() {
       <Navbar isFullscreen={isFullscreen} autoHideNavbar={autoHideNavbar} onFullscreenChange={setIsFullscreen}
         onAboutOpen={openAboutWindow}
         onAppearanceOpen={openAppearanceWindow}
+        onProjectGithubOpen={openGitHubWindow}
+        onNotepadOpen={openNotepadWindow}
         minimizedWindows={minimizedWindows}
         onWindowRestore={restoreWindow} uiScale={uiScale} />
       <WorkspaceTabs activeTab={activeTab} uiScale={uiScale} onSelect={(tab) => {
@@ -483,7 +557,11 @@ function App() {
         onMinimizeStart={startMinimizingAppearanceWindow} onMinimize={minimizeAppearanceWindow}
         minimized={isAppearanceWindowMinimized} />}
       {isAboutWindowOpen && <AboutWindow onClose={closeAboutWindow} onMinimizeStart={startMinimizingAboutWindow}
-        onMinimize={minimizeAboutWindow} minimized={isAboutWindowMinimized} uiScale={uiScale} />}
+        onMinimize={minimizeAboutWindow} minimized={isAboutWindowMinimized} uiScale={uiScale} popupGlide={popupGlide} />}
+      {isGitHubWindowOpen && <GitHubWindow onClose={closeGitHubWindow} onMinimizeStart={startMinimizingGitHubWindow}
+        onMinimize={minimizeGitHubWindow} minimized={isGitHubWindowMinimized} uiScale={uiScale} popupGlide={popupGlide} />}
+      {isNotepadWindowOpen && <NotepadWindow onClose={closeNotepadWindow} onMinimizeStart={startMinimizingNotepadWindow}
+        onMinimize={minimizeNotepadWindow} minimized={isNotepadWindowMinimized} uiScale={uiScale} popupGlide={popupGlide} />}
     </>
   );
 }

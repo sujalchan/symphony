@@ -1,0 +1,135 @@
+.notepad-popup-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: color-mix(in srgb, var(--menu-bg) 99%, var(--accent-soft));
+}
+
+.notepad-menu {
+  display: flex;
+  flex: 0 0 34px;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 7px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--nav-bg) 98%, var(--accent-soft));
+}
+
+.notepad-menu button {
+  padding: 5px 9px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  cursor: default;
+}
+
+.notepad-menu button:hover,
+.notepad-menu button:focus-visible {
+  background: var(--hover);
+  color: var(--text-strong);
+}
+
+.notepad-menu button:disabled {
+  opacity: 0.38;
+  background: transparent;
+}
+
+.notepad-history-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.notepad-editor {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  background: var(--menu-bg);
+}
+
+.notepad-gutter {
+  flex: 0 0 32px;
+  overflow: hidden;
+  border-right: 1px solid var(--border);
+  background: color-mix(in srgb, var(--nav-bg) 98%, var(--accent-soft));
+  color: color-mix(in srgb, var(--text) 72%, var(--accent));
+  font: 13px/1.6 Consolas, "Cascadia Mono", monospace;
+  text-align: left;
+  user-select: none;
+}
+
+.notepad-gutter > div {
+  padding: 14px 4px 14px 12px;
+  will-change: transform;
+}
+
+.notepad-gutter span { display: block; }
+
+.notepad-editor textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: 14px 16px;
+  resize: none;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text-strong);
+  font: 13px/1.6 Consolas, "Cascadia Mono", "Courier New", monospace;
+  caret-color: var(--accent);
+  tab-size: 4;
+}
+
+.notepad-editor textarea::placeholder {
+  color: color-mix(in srgb, var(--text) 48%, transparent);
+}
+
+.notepad-editor textarea::selection {
+  background: var(--accent-soft);
+}
+
+.notepad-status {
+  display: flex;
+  flex: 0 0 27px;
+  align-items: center;
+  justify-content: flex-end;
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--nav-bg) 98%, var(--accent-soft));
+  color: color-mix(in srgb, var(--text) 78%, var(--grid-dot));
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.notepad-status span {
+  min-width: 70px;
+  padding: 0 12px;
+  border-left: 1px solid var(--border);
+  text-align: left;
+}
+
+.notepad-status span:first-child { min-width: 110px; }
+
+:root[data-glass="on"] .notepad-popup-body {
+  background: color-mix(in srgb, var(--menu-bg) 42%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+
+:root[data-glass="on"] .notepad-menu,
+:root[data-glass="on"] .notepad-gutter,
+:root[data-glass="on"] .notepad-status {
+  background: color-mix(in srgb, var(--nav-bg) 52%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(145%);
+  backdrop-filter: blur(14px) saturate(145%);
+}
+
+:root[data-glass="on"] .notepad-editor {
+  background: color-mix(in srgb, var(--menu-bg) 32%, transparent);
+}
+
+:root[data-glass="on"] .notepad-gutter {
+  border-right-color: color-mix(in srgb, var(--accent) 8%, var(--border));
+}

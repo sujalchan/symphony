@@ -2,17 +2,18 @@ import PopupWindow from "./PopupWindow";
 import SymphonyMark from "./SymphonyMark";
 import "./AboutWindow.css";
 
-export default function AboutWindow({ onClose, onMinimizeStart, onMinimize, minimized, uiScale }: {
+export default function AboutWindow({ onClose, onMinimizeStart, onMinimize, minimized, uiScale, popupGlide }: {
   onClose: () => void;
   onMinimizeStart: () => void;
   onMinimize: () => void;
   minimized: boolean;
   uiScale: number;
+  popupGlide: number;
 }) {
   return (
     <PopupWindow title="About Symphony IDE" windowId="about" onClose={onClose} onMinimizeStart={onMinimizeStart}
       onMinimize={onMinimize} minimized={minimized} uiScale={uiScale} initialSize={{ width: 420, height: 250 }}
-      minSize={{ width: 420, height: 250 }} resizable={false} bodyClassName="about-popup-body">
+      minSize={{ width: 420, height: 250 }} resizable={false} popupGlide={popupGlide} bodyClassName="about-popup-body">
       <div className="about-window-content">
         <SymphonyMark className="about-window-logo" />
         <h1>Symphony IDE</h1>

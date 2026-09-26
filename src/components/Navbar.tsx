@@ -3,7 +3,6 @@ import type { MouseEvent } from "react";
 import "./Navbar.css";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { isTauri } from "@tauri-apps/api/core";
-import { openUrl } from "@tauri-apps/plugin-opener";
 import SymphonyMark from "./SymphonyMark";
 
 function isInteractiveTarget(event: MouseEvent<HTMLElement>) {
@@ -17,12 +16,14 @@ type NavbarProps = {
     onFullscreenChange: (isFullscreen: boolean) => void;
     onAboutOpen: () => void;
     onAppearanceOpen: () => void;
+    onProjectGithubOpen: () => void;
+    onNotepadOpen: () => void;
     minimizedWindows: Array<{ id: string; title: string }>;
     onWindowRestore: (id: string) => void;
     uiScale: number;
 };
 
-export default function Navbar({ isFullscreen, autoHideNavbar, onFullscreenChange, onAboutOpen, onAppearanceOpen, minimizedWindows, onWindowRestore, uiScale }: NavbarProps) {
+export default function Navbar({ isFullscreen, autoHideNavbar, onFullscreenChange, onAboutOpen, onAppearanceOpen, onProjectGithubOpen, onNotepadOpen, minimizedWindows, onWindowRestore, uiScale }: NavbarProps) {
     const appWindow = isTauri() ? getCurrentWindow() : null;
     const [openMenu, setOpenMenu] = useState<"file" | "project" | "window" | "help" | null>(null);
     const [navbarVisible, setNavbarVisible] = useState(false);
@@ -159,25 +160,14 @@ export default function Navbar({ isFullscreen, autoHideNavbar, onFullscreenChang
 
                     <div id="window-dropdown" className="dropdown-content" hidden={openMenu !== "window"} onClick={() => setOpenMenu(null)}>
                         <button type="button" onClick={onAppearanceOpen}>Appearance</button>
+                        <button type="button" onClick={onNotepadOpen}>Notepad</button>
                     </div>
                 </div>
                 <div className="dropdown" ref={openMenu === "help" ? activeDropdown : null}>
                     <button className="menu-button" aria-expanded={openMenu === "help"} aria-controls="help-dropdown" onClick={() => setOpenMenu(openMenu === "help" ? null : "help")}>Help</button>
 
                     <div id="help-dropdown" className="dropdown-content" hidden={openMenu !== "help"} onClick={() => setOpenMenu(null)}>
-                        <a
-                            href="https://github.com/sujalchan/symphony"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(event) => {
-                                if (isTauri()) {
-                                    event.preventDefault();
-                                    void openUrl(event.currentTarget.href);
-                                }
-                            }}
-                        >
-                            Project GitHub
-                        </a>
+                        <button type="button" onClick={onProjectGithubOpen}>Project GitHub</button>
                     </div>
                 </div>
             </div>

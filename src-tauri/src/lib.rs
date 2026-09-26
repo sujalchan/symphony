@@ -55,6 +55,7 @@ pub fn run() {
                     .build()?;
                 let window_menu = SubmenuBuilder::new(handle, "Window")
                     .text("appearance", "Appearance")
+                    .text("notepad", "Notepad")
                     .build()?;
                 let help_menu = SubmenuBuilder::new(handle, "Help")
                     .text("project-github", "Project GitHub")
@@ -72,7 +73,7 @@ pub fn run() {
                 _app.set_menu(menu)?;
                 _app.on_menu_event(|app, event| {
                     let id = event.id().0.as_str();
-                    if matches!(id, "about" | "appearance" | "project-github") {
+                    if matches!(id, "about" | "appearance" | "notepad" | "project-github") {
                         let _ = _app.emit("symphony-native-menu", id);
                     }
                 });

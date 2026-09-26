@@ -3,6 +3,7 @@ import { presetNames } from "../../theme";
 import AppearanceSwitch from "./AppearanceSwitch";
 import ColorThemeSettings from "./ColorThemeSettings";
 import PopupTransparencySetting from "./PopupTransparencySetting";
+import PopupGlideSetting from "./PopupGlideSetting";
 import ThemeModeSetting from "./ThemeModeSetting";
 import UiScaleSetting from "./UiScaleSetting";
 import type { AppearanceSettingsProps } from "./AppearanceSettings";
@@ -30,8 +31,11 @@ export function buildAppearanceSections(props: AppearanceSettingsProps): Appeara
     {
       id: "popup",
       title: "Popup settings",
-      searchText: "Popup window transparency",
-      content: <PopupTransparencySetting value={props.popupTransparency} onChange={props.onPopupTransparencyChange} glass={props.glass} />,
+      searchText: "Popup window transparency glide effect delay",
+      content: <>
+        <PopupTransparencySetting value={props.popupTransparency} onChange={props.onPopupTransparencyChange} glass={props.glass} />
+        <PopupGlideSetting value={props.popupGlide} onChange={props.onPopupGlideChange} />
+      </>,
     },
     {
       id: "effects",

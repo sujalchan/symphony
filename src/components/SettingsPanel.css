@@ -609,7 +609,8 @@
   opacity: 0.4;
 }
 
-.popup-transparency-heading {
+.popup-transparency-heading,
+.popup-glide-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -617,12 +618,14 @@
   width: 100%;
 }
 
-.popup-transparency-heading output {
+.popup-transparency-heading output,
+.popup-glide-heading output {
   color: var(--text-strong);
   font-variant-numeric: tabular-nums;
 }
 
-.popup-transparency-setting input[type="range"] {
+.popup-transparency-setting input[type="range"],
+.popup-glide-setting input[type="range"] {
   width: 100%;
   margin: 0;
   accent-color: var(--accent);
