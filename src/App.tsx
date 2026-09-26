@@ -56,6 +56,10 @@ function App() {
     return Math.max(0, Math.min(maximumPanelWidth(contentWidth), width));
   }
 
+  function toggleTheme() {
+    setTheme((current) => current === "dark" ? "light" : "dark");
+  }
+
   useEffect(() => {
     if (!isTauri()) return;
 
@@ -102,7 +106,7 @@ function App() {
 
   return (
     <>
-      <Navbar isFullscreen={isFullscreen} onFullscreenChange={setIsFullscreen} theme={theme} onThemeToggle={() => setTheme(theme === "dark" ? "light" : "dark")} />
+      <Navbar isFullscreen={isFullscreen} onFullscreenChange={setIsFullscreen} theme={theme} onThemeToggle={toggleTheme} />
       <WorkspaceTabs activeTab={activeTab} onSelect={(tab) => {
         setActiveTab(tab);
         if (!isPanelOpen) setPanelWidth(lastExpandedWidth.current);
@@ -113,7 +117,7 @@ function App() {
         className={`app-content${isPanelOpen ? "" : " is-panel-collapsed"}${isResizing ? " is-resizing" : ""}`}
         style={{ "--panel-width": panelWidth === null ? "max(320px, 25%)" : `${panelWidth}px` } as CSSProperties}
       >
-        <WorkspacePanel collapsed={!isPanelOpen} activeTab={activeTab} />
+        <WorkspacePanel collapsed={!isPanelOpen} activeTab={activeTab} theme={theme} onThemeToggle={toggleTheme} />
         <button
           className="workspace-divider"
           type="button"

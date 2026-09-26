@@ -70,7 +70,7 @@ body {
   grid-template-columns: minmax(0, min(var(--panel-width, max(320px, 25%)), calc(100% - 216px))) 16px minmax(0, 1fr);
   height: calc(100% - 40px);
   margin-top: 40px;
-  padding: 12px 12px 12px 64px;
+  padding: 12px 12px 12px 68px;
   transition: grid-template-columns 240ms ease;
 }
 
@@ -104,8 +104,8 @@ body {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 3px;
-  height: 44px;
+  width: 2px;
+  height: 30px;
   border-radius: 3px;
   background: var(--border);
   transform: translate(-50%, -50%);
@@ -119,19 +119,19 @@ body {
   z-index: 1;
   display: grid;
   place-items: center;
-  width: 14px;
-  height: 22px;
+  width: 12px;
+  height: 16px;
   border-radius: 4px;
   background: var(--app-bg);
   color: var(--text);
-  font-size: 17px;
+  font-size: 12px;
   line-height: 1;
   transform: translate(-50%, -50%);
 }
 
 .workspace-divider:hover::before,
 .workspace-divider:focus-visible::before {
-  height: 60px;
+  height: 40px;
   background: var(--text);
 }
 
