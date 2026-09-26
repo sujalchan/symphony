@@ -1,5 +1,8 @@
 :root {
   color-scheme: dark;
+  --ui-scale: 1;
+  --accent: #a6a9af;
+  --accent-soft: rgba(166, 169, 175, 0.2);
   --app-bg: #242424;
   --nav-bg: #2b2b2b;
   --menu-bg: #303030;
@@ -9,6 +12,15 @@
   --text-strong: #ffffff;
   --border: rgba(255, 255, 255, 0.1);
   --hover: rgba(255, 255, 255, 0.07);
+  --navbar-glass: rgba(28, 28, 30, 0.82);
+  --navbar-glow: var(--accent-soft);
+  --navbar-mouse-glow: rgba(255, 255, 255, 0.045);
+  --navbar-edge: rgba(255, 255, 255, 0.19);
+  --rail-proximity-glow: var(--accent-soft);
+  --rail-indicator: var(--accent-soft);
+  --chrome-surface: var(--navbar-glass);
+  --chrome-background: radial-gradient(ellipse 80% 150% at 18% -35%, var(--navbar-glow), transparent 85%), linear-gradient(115deg, rgba(255, 255, 255, 0.07), transparent 65%), var(--chrome-surface);
+  --chrome-filter: blur(24px) saturate(140%);
 }
 
 :root[data-theme="light"] {
@@ -22,6 +34,18 @@
   --text-strong: #111318;
   --border: rgba(0, 0, 0, 0.12);
   --hover: rgba(0, 0, 0, 0.06);
+  --navbar-glass: rgba(222, 222, 224, 0.82);
+  --navbar-mouse-glow: rgba(255, 255, 255, 0.12);
+  --navbar-edge: rgba(255, 255, 255, 0.85);
+}
+
+:root[data-glass="off"] {
+  --chrome-surface: var(--nav-bg);
+  --chrome-filter: none;
+}
+
+:root[data-gradients="off"] {
+  --chrome-background: var(--chrome-surface);
 }
 
 html,
@@ -51,8 +75,12 @@ body {
 }
 
 #root {
+  position: relative;
+  width: calc(100vw / var(--ui-scale));
+  height: calc(100vh / var(--ui-scale));
   background: var(--app-bg);
   border-radius: 10px;
+  zoom: var(--ui-scale);
 }
 
 .window-fullscreen #root {

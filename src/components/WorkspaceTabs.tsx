@@ -70,7 +70,7 @@ function TabButton({ tab, index, activeTab, onSelect }: { tab: WorkspaceTab; ind
   );
 }
 
-export default function WorkspaceTabs({ activeTab, onSelect }: { activeTab: WorkspaceTab; onSelect: (tab: WorkspaceTab) => void }) {
+export default function WorkspaceTabs({ activeTab, onSelect, uiScale }: { activeTab: WorkspaceTab; onSelect: (tab: WorkspaceTab) => void; uiScale: number }) {
   const railRef = useRef<HTMLDivElement>(null);
   const [indicatorY, setIndicatorY] = useState(4);
 
@@ -96,8 +96,8 @@ export default function WorkspaceTabs({ activeTab, onSelect }: { activeTab: Work
         return;
       }
 
-      rail.style.setProperty("--rail-glow-x", `${event.clientX - bounds.left}px`);
-      rail.style.setProperty("--rail-glow-y", `${event.clientY - bounds.top}px`);
+      rail.style.setProperty("--rail-glow-x", `${(event.clientX - bounds.left) / (uiScale / 100)}px`);
+      rail.style.setProperty("--rail-glow-y", `${(event.clientY - bounds.top) / (uiScale / 100)}px`);
       rail.style.setProperty("--rail-glow-opacity", String(1 - distance / 140));
       glowVisible = true;
     }
@@ -110,7 +110,7 @@ export default function WorkspaceTabs({ activeTab, onSelect }: { activeTab: Work
       document.removeEventListener("pointerleave", resetGlow);
       window.removeEventListener("blur", resetGlow);
     };
-  }, []);
+  }, [uiScale]);
 
   useLayoutEffect(() => {
     const rail = railRef.current;
@@ -119,7 +119,7 @@ export default function WorkspaceTabs({ activeTab, onSelect }: { activeTab: Work
     function updateIndicator() {
       const selected = rail?.querySelector<HTMLButtonElement>('[role="tab"][aria-selected="true"]');
       if (selected && rail) {
-        setIndicatorY(selected.getBoundingClientRect().top - rail.getBoundingClientRect().top);
+        setIndicatorY((selected.getBoundingClientRect().top - rail.getBoundingClientRect().top) / (uiScale / 100));
       }
     }
 
@@ -127,7 +127,7 @@ export default function WorkspaceTabs({ activeTab, onSelect }: { activeTab: Work
     const observer = new ResizeObserver(updateIndicator);
     observer.observe(rail);
     return () => observer.disconnect();
-  }, [activeTab]);
+  }, [activeTab, uiScale]);
 
   return (
     <div ref={railRef} className="workspace-tab-rail" role="tablist" aria-label="Workspace panels" aria-orientation="vertical">

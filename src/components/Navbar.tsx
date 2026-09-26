@@ -13,15 +13,46 @@ function isInteractiveTarget(event: MouseEvent<HTMLElement>) {
 type NavbarProps = {
     isFullscreen: boolean;
     onFullscreenChange: (isFullscreen: boolean) => void;
-    theme: "dark" | "light";
-    onThemeToggle: () => void;
+    onAppearanceOpen: () => void;
+    minimizedWindows: Array<{ id: string; title: string }>;
+    onWindowRestore: (id: string) => void;
+    uiScale: number;
 };
 
-export default function Navbar({ isFullscreen, onFullscreenChange, theme, onThemeToggle }: NavbarProps) {
-    const window = getCurrentWindow();
+export default function Navbar({ isFullscreen, onFullscreenChange, onAppearanceOpen, minimizedWindows, onWindowRestore, uiScale }: NavbarProps) {
+    const appWindow = isTauri() ? getCurrentWindow() : null;
     const [openMenu, setOpenMenu] = useState<"file" | "project" | "window" | "help" | null>(null);
     const [navbarVisible, setNavbarVisible] = useState(false);
     const activeDropdown = useRef<HTMLDivElement>(null);
+    const minimizedSection = useRef<HTMLDivElement>(null);
+    const [showFullWindowNames, setShowFullWindowNames] = useState(true);
+
+    useEffect(() => {
+        const section = minimizedSection.current;
+        if (!section || minimizedWindows.length === 0) {
+            setShowFullWindowNames(true);
+            return;
+        }
+
+        const updateLabelMode = () => {
+            const buttons = [...section.querySelectorAll<HTMLButtonElement>(".minimized-window-button")];
+            const style = getComputedStyle(section);
+            const gap = parseFloat(style.columnGap) || 0;
+            const neededWidth = buttons.reduce((total, button) => {
+                const measure = button.querySelector<HTMLElement>(".minimized-window-measure");
+                const buttonStyle = getComputedStyle(button);
+                return total + (measure?.getBoundingClientRect().width ?? 0)
+                    + parseFloat(buttonStyle.paddingLeft) + parseFloat(buttonStyle.paddingRight)
+                    + parseFloat(buttonStyle.borderLeftWidth) + parseFloat(buttonStyle.borderRightWidth);
+            }, 0) + Math.max(0, buttons.length - 1) * gap;
+            setShowFullWindowNames(neededWidth <= section.clientWidth);
+        };
+
+        const observer = new ResizeObserver(updateLabelMode);
+        observer.observe(section);
+        updateLabelMode();
+        return () => observer.disconnect();
+    }, [minimizedWindows]);
 
     useEffect(() => {
         if (!isFullscreen) {
@@ -65,8 +96,9 @@ export default function Navbar({ isFullscreen, onFullscreenChange, theme, onThem
     }, []);
 
     async function toggleFullscreen() {
-        const fullscreen = !(await window.isFullscreen());
-        await window.setFullscreen(fullscreen);
+        if (!appWindow) return;
+        const fullscreen = !(await appWindow.isFullscreen());
+        await appWindow.setFullscreen(fullscreen);
         if (fullscreen && document.activeElement instanceof HTMLElement) {
             document.activeElement.blur();
         }
@@ -80,8 +112,8 @@ export default function Navbar({ isFullscreen, onFullscreenChange, theme, onThem
                 if (event.pointerType !== "mouse") return;
                 const navbar = event.currentTarget;
                 const bounds = navbar.getBoundingClientRect();
-                navbar.style.setProperty("--glow-x", `${event.clientX - bounds.left}px`);
-                navbar.style.setProperty("--glow-y", `${event.clientY - bounds.top}px`);
+                navbar.style.setProperty("--glow-x", `${(event.clientX - bounds.left) / (uiScale / 100)}px`);
+                navbar.style.setProperty("--glow-y", `${(event.clientY - bounds.top) / (uiScale / 100)}px`);
                 navbar.style.setProperty("--glow-opacity", "1");
             }}
             onPointerLeave={(event) => {
@@ -89,12 +121,12 @@ export default function Navbar({ isFullscreen, onFullscreenChange, theme, onThem
             }}
             onMouseDown={(event) => {
                 if (event.button === 0 && event.detail === 1 && !isInteractiveTarget(event)) {
-                    void window.startDragging();
+                    void appWindow?.startDragging();
                 }
             }}
             onDoubleClick={(event) => {
                 if (event.button === 0 && !isInteractiveTarget(event)) {
-                    void window.toggleMaximize();
+                    void appWindow?.toggleMaximize();
                 }
             }}
         >
@@ -119,9 +151,7 @@ export default function Navbar({ isFullscreen, onFullscreenChange, theme, onThem
                     <button className="menu-button" aria-expanded={openMenu === "window"} aria-controls="window-dropdown" onClick={() => setOpenMenu(openMenu === "window" ? null : "window")}>Window</button>
 
                     <div id="window-dropdown" className="dropdown-content" hidden={openMenu !== "window"} onClick={() => setOpenMenu(null)}>
-                        <button type="button" onClick={onThemeToggle}>
-                            {theme === "dark" ? "Light mode" : "Dark mode"}
-                        </button>
+                        <button type="button" onClick={onAppearanceOpen}>Appearance</button>
                     </div>
                 </div>
                 <div className="dropdown" ref={openMenu === "help" ? activeDropdown : null}>
@@ -145,6 +175,19 @@ export default function Navbar({ isFullscreen, onFullscreenChange, theme, onThem
                 </div>
             </div>
 
+            {minimizedWindows.length > 0 && (
+                <div ref={minimizedSection} className="navbar-minimized-windows" role="group" aria-label="Minimized windows">
+                    {minimizedWindows.map((item) => (
+                        <button key={item.id} type="button" className="minimized-window-button"
+                            data-window-id={item.id} title={`${item.title} Popup`} aria-label={`Restore ${item.title}`}
+                            onClick={() => onWindowRestore(item.id)}>
+                            <span>{showFullWindowNames ? item.title : `${item.title.slice(0, 3)}...`}</span>
+                            <span className="minimized-window-measure" aria-hidden="true">{item.title}</span>
+                        </button>
+                    ))}
+                </div>
+            )}
+
             <div className="navbar-right">
                 <div className="window-controls">
                     <button
@@ -160,14 +203,14 @@ export default function Navbar({ isFullscreen, onFullscreenChange, theme, onThem
                         aria-label="Minimize window"
                         data-label="Minimize"
                         disabled={isFullscreen}
-                        onClick={() => window.minimize()}
+                        onClick={() => appWindow?.minimize()}
                     />
                     <button
                         className="window-control close-control"
                         type="button"
                         aria-label="Close Symphony IDE"
                         data-label="Close Symphony IDE"
-                        onClick={() => window.close()}
+                        onClick={() => appWindow?.close()}
                     />
                 </div>
             </div>

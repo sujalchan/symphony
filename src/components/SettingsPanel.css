@@ -1,0 +1,339 @@
+.appearance-settings {
+  margin-top: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--menu-bg);
+}
+
+.appearance-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.appearance-toggle:is(:hover, :focus-visible) {
+  background: var(--hover);
+}
+
+.appearance-toggle svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 160ms ease;
+}
+
+.appearance-toggle[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.appearance-settings-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.appearance-settings[data-expanded="true"] .appearance-settings-content {
+  grid-template-rows: 1fr;
+}
+
+.appearance-settings-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.appearance-settings-body {
+  padding: 0 10px 16px;
+}
+
+.appearance-settings-body > .settings-option:first-child {
+  margin-top: 16px;
+}
+
+.settings-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 24px;
+  color: var(--text);
+  font-size: 12px;
+}
+
+.settings-option button {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--menu-bg);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.settings-option button:hover,
+.settings-option button:focus-visible {
+  background: var(--hover);
+}
+
+.settings-panel {
+  padding-bottom: 28px;
+}
+
+.ui-scale-control {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.ui-scale-option {
+  position: relative;
+  z-index: 1;
+}
+
+.ui-scale-control input {
+  width: 72px;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--menu-bg);
+  color: var(--text);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.scale-warning {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-left: 3px;
+  color: var(--accent);
+  cursor: default;
+}
+
+.scale-warning::after {
+  content: attr(data-label);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  width: min(240px, 100%);
+  padding: 4px 7px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--menu-bg);
+  color: var(--text);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.25;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-3px);
+  transition: opacity 150ms ease, transform 150ms ease, visibility 150ms ease;
+}
+
+.scale-warning:is(:hover, :focus-visible)::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.scale-warning svg {
+  width: 18px;
+  height: 18px;
+}
+
+.scale-warning:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.accent-options {
+  min-width: 0;
+  width: 100%;
+  padding: 0;
+  border: 0;
+}
+
+.accent-options legend {
+  padding: 0;
+}
+
+.accent-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  margin-top: 8px;
+}
+
+.accent-choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 5px;
+  border-radius: 5px;
+  font-size: 11px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.accent-choice:hover,
+.accent-choice:focus-within {
+  background: var(--hover);
+}
+
+.accent-choice input {
+  position: absolute;
+  opacity: 0;
+}
+
+.accent-swatch {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--grid-bg);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+.accent-choice .accent-swatch {
+  width: 14px;
+  height: 14px;
+  border-width: 1px;
+}
+
+.accent-choice input:checked + .accent-swatch,
+.accent-choice input:focus-visible + .accent-swatch {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.color-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.color-picker-row input[type="color"] {
+  width: 36px;
+  height: 28px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--menu-bg);
+  cursor: pointer;
+}
+
+.color-picker-row output {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.profile-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+}
+
+.profile-form input {
+  min-width: 100px;
+  flex: 1;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--menu-bg);
+  color: var(--text);
+  font: inherit;
+}
+
+.settings-option .profile-form button {
+  padding: 5px 8px;
+}
+
+.profile-form button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.profile-list {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.profile-list li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.settings-option .profile-select {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+  padding: 4px 6px;
+  text-align: left;
+}
+
+.profile-select .accent-swatch {
+  width: 14px;
+  height: 14px;
+  border-width: 1px;
+}
+
+.profile-select span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-option .profile-select.is-selected {
+  border-color: var(--accent);
+}
+
+.settings-option .profile-delete {
+  flex: 0 0 auto;
+  padding: 4px 6px;
+  white-space: nowrap;
+}
+
+.settings-toggle {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  cursor: pointer;
+}
+
+.settings-toggle input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .appearance-toggle svg,
+  .appearance-settings-content {
+    transition: none;
+  }
+}

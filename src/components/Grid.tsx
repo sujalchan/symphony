@@ -15,7 +15,7 @@ type View = {
 
 type PointerPosition = { x: number; y: number };
 
-export default function Grid() {
+export default function Grid({ uiScale }: { uiScale: number }) {
   const [view, setView] = useState<View>({ zoom: 100, x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -37,8 +37,8 @@ export default function Grid() {
       if (zoom === current.zoom) return current;
 
       const ratio = zoom / current.zoom;
-      const centerX = bounds.width / 2;
-      const centerY = bounds.height / 2;
+      const centerX = bounds.width / (2 * uiScale / 100);
+      const centerY = bounds.height / (2 * uiScale / 100);
       return {
         zoom,
         x: centerX - (centerX - current.x) * ratio,
@@ -74,8 +74,8 @@ export default function Grid() {
       if (!event.ctrlKey || !canvas) return;
       event.preventDefault();
       const bounds = canvas.getBoundingClientRect();
-      const x = event.clientX - bounds.left;
-      const y = event.clientY - bounds.top;
+      const x = (event.clientX - bounds.left) / (uiScale / 100);
+      const y = (event.clientY - bounds.top) / (uiScale / 100);
       const factor = Math.exp(-event.deltaY * 0.005);
       setView((current) => {
         const zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, current.zoom * factor));
@@ -90,7 +90,7 @@ export default function Grid() {
 
     canvas.addEventListener("wheel", zoomWithTrackpad, { passive: false });
     return () => canvas.removeEventListener("wheel", zoomWithTrackpad);
-  }, []);
+  }, [uiScale]);
 
   return (
     <div
@@ -108,8 +108,8 @@ export default function Grid() {
       onPointerMove={(event) => {
         const pointer = activePointers.current.get(event.pointerId);
         if (!pointer) return;
-        const dx = event.clientX - pointer.x;
-        const dy = event.clientY - pointer.y;
+        const dx = (event.clientX - pointer.x) / (uiScale / 100);
+        const dy = (event.clientY - pointer.y) / (uiScale / 100);
         pointer.x = event.clientX;
         pointer.y = event.clientY;
 
@@ -127,12 +127,12 @@ export default function Grid() {
           const factor = previous.distance > 1 ? next.distance / previous.distance : 1;
           const zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, current.zoom * factor));
           const ratio = zoom / current.zoom;
-          const previousX = previous.x - bounds.left;
-          const previousY = previous.y - bounds.top;
+          const previousX = (previous.x - bounds.left) / (uiScale / 100);
+          const previousY = (previous.y - bounds.top) / (uiScale / 100);
           return {
             zoom,
-            x: next.x - bounds.left - (previousX - current.x) * ratio,
-            y: next.y - bounds.top - (previousY - current.y) * ratio,
+            x: (next.x - bounds.left) / (uiScale / 100) - (previousX - current.x) * ratio,
+            y: (next.y - bounds.top) / (uiScale / 100) - (previousY - current.y) * ratio,
           };
         });
       }}

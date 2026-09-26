@@ -1,15 +1,5 @@
 .workspace-tab-rail {
-  --rail-proximity-glow: rgba(255, 255, 255, 0.045);
-  --rail-indicator: rgba(255, 255, 255, 0.1);
-}
-
-:root[data-theme="light"] .workspace-tab-rail {
-  --rail-proximity-glow: rgba(255, 255, 255, 0.1);
-  --rail-indicator: rgba(255, 255, 255, 0.42);
-}
-
-.workspace-tab-rail {
-  position: fixed;
+  position: absolute;
   top: 52px;
   bottom: 12px;
   left: 12px;
@@ -21,17 +11,35 @@
   isolation: isolate;
   border: 1px solid var(--navbar-edge);
   border-radius: 12px;
-  background:
-    url("../assets/frost-noise.svg") repeat,
-    linear-gradient(115deg, rgba(255, 255, 255, 0.07), transparent 65%),
-    var(--navbar-glass);
-  background-size: 128px 128px, auto, auto;
-  background-blend-mode: soft-light, normal, normal;
+  background: var(--chrome-background);
   box-shadow:
     inset 0 1px 0 var(--navbar-edge),
     0 8px 24px rgba(0, 0, 0, 0.16);
-  -webkit-backdrop-filter: blur(24px) saturate(140%);
-  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: var(--chrome-filter);
+  backdrop-filter: var(--chrome-filter);
+}
+
+:root[data-glass="off"] .workspace-tab-rail {
+  box-shadow: none;
+}
+
+:root[data-gradients="off"] .workspace-tab-rail::before {
+  display: none;
+}
+
+:root[data-gradients="off"] .workspace-tab-rail::after {
+  background: url("../assets/frost-noise.svg") repeat;
+  background-size: 128px 128px;
+  animation: none;
+  opacity: 0.4;
+}
+
+:root[data-glass="off"] .workspace-tab-rail::after {
+  background: radial-gradient(ellipse 160% 36% at 15% 6%, var(--navbar-glow), transparent 85%);
+}
+
+:root[data-glass="off"][data-gradients="off"] .workspace-tab-rail::after {
+  display: none;
 }
 
 .workspace-tab-rail::before {
@@ -57,7 +65,8 @@
   z-index: 0;
   border-radius: inherit;
   pointer-events: none;
-  background: radial-gradient(ellipse 160% 36% at 15% 6%, var(--navbar-glow), transparent 85%);
+  background: radial-gradient(ellipse 160% 36% at 15% 6%, var(--navbar-glow), transparent 85%), url("../assets/frost-noise.svg") repeat;
+  background-size: auto, 128px 128px;
   animation: rail-breathe 16s ease-in-out infinite;
 }
 
@@ -86,8 +95,8 @@
   border: 1px solid var(--navbar-edge);
   border-radius: 10px;
   background: var(--rail-indicator);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: var(--chrome-filter);
+  backdrop-filter: var(--chrome-filter);
   pointer-events: none;
   transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
 }

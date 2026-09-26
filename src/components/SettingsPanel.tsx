@@ -1,13 +1,12 @@
-export default function SettingsPanel({ theme, onThemeToggle }: { theme: "dark" | "light"; onThemeToggle: () => void }) {
+import AppearanceSettings from "./settings/AppearanceSettings";
+import type { AppearanceSettingsProps } from "./settings/AppearanceSettings";
+import "./SettingsPanel.css";
+
+export default function SettingsPanel(props: AppearanceSettingsProps) {
   return (
-    <section className="workspace-panel-content" role="tabpanel" id="settings-panel" aria-labelledby="settings-tab">
+    <section className="workspace-panel-content settings-panel" role="tabpanel" id="settings-panel" aria-labelledby="settings-tab">
       <h2>Settings</h2>
-      <div className="settings-option">
-        <span>Appearance</span>
-        <button type="button" onClick={onThemeToggle}>
-          {theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-        </button>
-      </div>
+      <AppearanceSettings {...props} />
     </section>
   );
 }
