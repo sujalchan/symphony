@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import "./WorkspaceTabs.css";
 
 export type WorkspaceTab = "code" | "costume" | "sounds" | "settings";
@@ -73,6 +73,44 @@ function TabButton({ tab, index, activeTab, onSelect }: { tab: WorkspaceTab; ind
 export default function WorkspaceTabs({ activeTab, onSelect }: { activeTab: WorkspaceTab; onSelect: (tab: WorkspaceTab) => void }) {
   const railRef = useRef<HTMLDivElement>(null);
   const [indicatorY, setIndicatorY] = useState(4);
+
+  useEffect(() => {
+    const rail = railRef.current;
+    if (!rail) return;
+    let glowVisible = false;
+
+    function resetGlow() {
+      if (!glowVisible) return;
+      rail?.style.setProperty("--rail-glow-opacity", "0");
+      glowVisible = false;
+    }
+
+    function updateGlow(event: globalThis.PointerEvent) {
+      if (event.pointerType !== "mouse" || !rail) return;
+      const bounds = rail.getBoundingClientRect();
+      const dx = Math.max(bounds.left - event.clientX, 0, event.clientX - bounds.right);
+      const dy = Math.max(bounds.top - event.clientY, 0, event.clientY - bounds.bottom);
+      const distance = Math.hypot(dx, dy);
+      if (distance >= 140) {
+        resetGlow();
+        return;
+      }
+
+      rail.style.setProperty("--rail-glow-x", `${event.clientX - bounds.left}px`);
+      rail.style.setProperty("--rail-glow-y", `${event.clientY - bounds.top}px`);
+      rail.style.setProperty("--rail-glow-opacity", String(1 - distance / 140));
+      glowVisible = true;
+    }
+
+    document.addEventListener("pointermove", updateGlow);
+    document.addEventListener("pointerleave", resetGlow);
+    window.addEventListener("blur", resetGlow);
+    return () => {
+      document.removeEventListener("pointermove", updateGlow);
+      document.removeEventListener("pointerleave", resetGlow);
+      window.removeEventListener("blur", resetGlow);
+    };
+  }, []);
 
   useLayoutEffect(() => {
     const rail = railRef.current;

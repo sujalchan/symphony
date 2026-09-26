@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { PointerEvent } from "react";
 import "./Grid.css";
 
@@ -13,11 +13,14 @@ type View = {
   y: number;
 };
 
+type PointerPosition = { x: number; y: number };
+
 export default function Grid() {
   const [view, setView] = useState<View>({ zoom: 100, x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
-  const activePointer = useRef<{ id: number; x: number; y: number } | null>(null);
+  const activePointers = useRef(new Map<number, PointerPosition>());
+  const pinch = useRef<{ distance: number; x: number; y: number } | null>(null);
 
   const scale = view.zoom / 100;
   const level = Math.max(0, Math.min(GRID_SPACINGS.length - 1, Math.log2(1 / scale)));
@@ -30,7 +33,7 @@ export default function Grid() {
     if (!bounds) return;
 
     setView((current) => {
-      const zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, current.zoom + amount));
+      const zoom = Math.round(Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, current.zoom + amount)));
       if (zoom === current.zoom) return current;
 
       const ratio = zoom / current.zoom;
@@ -44,14 +47,50 @@ export default function Grid() {
     });
   }
 
-  function stopPanning(event: PointerEvent<HTMLElement>) {
-    if (activePointer.current?.id !== event.pointerId) return;
-    activePointer.current = null;
-    setIsPanning(false);
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+  function pinchPosition() {
+    const [first, second] = [...activePointers.current.values()];
+    if (!first || !second) return null;
+    return {
+      distance: Math.hypot(second.x - first.x, second.y - first.y),
+      x: (first.x + second.x) / 2,
+      y: (first.y + second.y) / 2,
+    };
+  }
+
+  function stopPointer(event: PointerEvent<HTMLElement>, releaseCapture = true) {
+    if (!activePointers.current.delete(event.pointerId)) return;
+    pinch.current = null;
+    if (activePointers.current.size === 0) setIsPanning(false);
+    if (releaseCapture && event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
   }
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    function zoomWithTrackpad(event: WheelEvent) {
+      if (!event.ctrlKey || !canvas) return;
+      event.preventDefault();
+      const bounds = canvas.getBoundingClientRect();
+      const x = event.clientX - bounds.left;
+      const y = event.clientY - bounds.top;
+      const factor = Math.exp(-event.deltaY * 0.005);
+      setView((current) => {
+        const zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, current.zoom * factor));
+        const ratio = zoom / current.zoom;
+        return {
+          zoom,
+          x: x - (x - current.x) * ratio,
+          y: y - (y - current.y) * ratio,
+        };
+      });
+    }
+
+    canvas.addEventListener("wheel", zoomWithTrackpad, { passive: false });
+    return () => canvas.removeEventListener("wheel", zoomWithTrackpad);
+  }, []);
 
   return (
     <div
@@ -59,29 +98,47 @@ export default function Grid() {
       className={isPanning ? "canvas is-panning" : "canvas"}
       aria-label="Infinite dotted canvas"
       onPointerDown={(event) => {
-        if (event.button !== 0 || !event.isPrimary) return;
-        activePointer.current = { id: event.pointerId, x: event.clientX, y: event.clientY };
+        if (event.pointerType !== "touch" && (event.button !== 0 || !event.isPrimary)) return;
+        if (activePointers.current.size >= 2) return;
+        activePointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        if (activePointers.current.size === 2) pinch.current = pinchPosition();
         event.currentTarget.setPointerCapture(event.pointerId);
         setIsPanning(true);
       }}
       onPointerMove={(event) => {
-        const pointer = activePointer.current;
-        if (pointer?.id !== event.pointerId) return;
-
+        const pointer = activePointers.current.get(event.pointerId);
+        if (!pointer) return;
         const dx = event.clientX - pointer.x;
         const dy = event.clientY - pointer.y;
         pointer.x = event.clientX;
         pointer.y = event.clientY;
-        setView((current) => ({ ...current, x: current.x + dx, y: current.y + dy }));
-      }}
-      onPointerUp={stopPanning}
-      onPointerCancel={stopPanning}
-      onLostPointerCapture={(event) => {
-        if (activePointer.current?.id === event.pointerId) {
-          activePointer.current = null;
-          setIsPanning(false);
+
+        if (activePointers.current.size === 1) {
+          setView((current) => ({ ...current, x: current.x + dx, y: current.y + dy }));
+          return;
         }
+
+        const previous = pinch.current;
+        const next = pinchPosition();
+        const bounds = event.currentTarget.getBoundingClientRect();
+        if (!next || !previous) return;
+        pinch.current = next;
+        setView((current) => {
+          const factor = previous.distance > 1 ? next.distance / previous.distance : 1;
+          const zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, current.zoom * factor));
+          const ratio = zoom / current.zoom;
+          const previousX = previous.x - bounds.left;
+          const previousY = previous.y - bounds.top;
+          return {
+            zoom,
+            x: next.x - bounds.left - (previousX - current.x) * ratio,
+            y: next.y - bounds.top - (previousY - current.y) * ratio,
+          };
+        });
       }}
+      onPointerUp={stopPointer}
+      onPointerCancel={stopPointer}
+      onLostPointerCapture={(event) => stopPointer(event, false)}
     >
       {GRID_SPACINGS.map((spacing, index) => (
         <div
@@ -97,7 +154,7 @@ export default function Grid() {
 
       <div className="zoom-toolbox" role="group" aria-label="Grid zoom controls" onPointerDown={(event) => event.stopPropagation()}>
         <button type="button" aria-label="Zoom in" disabled={view.zoom === MAX_ZOOM} onClick={() => changeZoom(ZOOM_STEP)}>+</button>
-        <output aria-live="polite" aria-label="Current zoom">{view.zoom}%</output>
+        <output aria-live="polite" aria-label="Current zoom">{Math.round(view.zoom)}%</output>
         <button type="button" aria-label="Zoom out" disabled={view.zoom === MIN_ZOOM} onClick={() => changeZoom(-ZOOM_STEP)}>−</button>
       </div>
     </div>

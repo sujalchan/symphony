@@ -41,15 +41,57 @@
   align-items: center;
   width: 44px;
   padding: 3px;
-  border: 1px solid var(--border);
+  isolation: isolate;
+  border: 1px solid var(--navbar-edge);
   border-radius: 12px;
-  background: var(--menu-bg);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  background:
+    url("../assets/frost-noise.svg") repeat,
+    linear-gradient(115deg, rgba(255, 255, 255, 0.07), transparent 65%),
+    var(--navbar-glass);
+  background-size: 128px 128px, auto, auto;
+  background-blend-mode: soft-light, normal, normal;
+  box-shadow:
+    inset 0 1px 0 var(--navbar-edge),
+    0 8px 24px rgba(0, 0, 0, 0.16);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(24px) saturate(140%);
+  opacity: 0.3;
+  transition: opacity 220ms ease;
   cursor: default;
   touch-action: manipulation;
 }
 
+.zoom-toolbox:hover,
+.zoom-toolbox:focus-within {
+  opacity: 1;
+}
+
+.zoom-toolbox::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(ellipse 160% 80% at 15% 6%, var(--navbar-glow), transparent 85%);
+  animation: zoom-glass-breathe 16s ease-in-out infinite;
+}
+
+@keyframes zoom-glass-breathe {
+
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+
+  50% {
+    opacity: 0.85;
+  }
+}
+
 .zoom-toolbox button {
+  position: relative;
+  z-index: 1;
   width: 34px;
   height: 27px;
   padding: 0;
@@ -74,6 +116,8 @@
 }
 
 .zoom-toolbox output {
+  position: relative;
+  z-index: 1;
   min-width: 36px;
   padding: 5px 0;
   border-block: 1px solid var(--border);
@@ -85,6 +129,15 @@
 
 @media (prefers-reduced-motion: reduce) {
   .grid-layer {
+    transition: none;
+  }
+
+  .zoom-toolbox::before {
+    animation: none;
+    opacity: 0.6;
+  }
+
+  .zoom-toolbox {
     transition: none;
   }
 }
