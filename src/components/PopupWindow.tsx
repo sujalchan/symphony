@@ -22,6 +22,7 @@ type PopupWindowProps = {
   onMinimize?: () => void;
   minimized?: boolean;
   windowId?: string;
+  bodyClassName?: string;
   uiScale: number;
   initialSize?: Size;
   minSize?: Size;
@@ -29,7 +30,7 @@ type PopupWindowProps = {
 
 const DEFAULT_MIN_SIZE = { width: 280, height: 220 };
 
-export default function PopupWindow({ title, children, onClose, onMinimizeStart, onMinimize, minimized = false, windowId, uiScale, initialSize = { width: 360, height: 420 }, minSize = DEFAULT_MIN_SIZE }: PopupWindowProps) {
+export default function PopupWindow({ title, children, onClose, onMinimizeStart, onMinimize, minimized = false, windowId, bodyClassName = "", uiScale, initialSize = { width: 360, height: 420 }, minSize = DEFAULT_MIN_SIZE }: PopupWindowProps) {
   const titleId = useId();
   const windowRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -237,7 +238,7 @@ export default function PopupWindow({ title, children, onClose, onMinimizeStart,
             aria-label={`Close ${title}`} data-label={`Close ${title}`} onClick={onClose} />
         </div>
       </div>
-      <div className="popup-window-body">{children}</div>
+      <div className={`popup-window-body ${bodyClassName}`}>{children}</div>
       <div className="popup-window-resize" role="button" aria-label={`Resize ${title} window`}
         tabIndex={0} onPointerDown={(event) => beginGesture(event, "resize")}
         onKeyDown={resizeWithKeyboard} />
