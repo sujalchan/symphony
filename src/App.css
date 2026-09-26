@@ -21,6 +21,7 @@
   --chrome-surface: var(--navbar-glass);
   --chrome-background: radial-gradient(ellipse 80% 150% at 18% -35%, var(--navbar-glow), transparent 85%), linear-gradient(115deg, rgba(255, 255, 255, 0.07), transparent 65%), var(--chrome-surface);
   --chrome-filter: blur(24px) saturate(140%);
+  --popup-background-opacity: 50%;
 }
 
 :root[data-theme="light"] {

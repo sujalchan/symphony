@@ -186,18 +186,30 @@ export default function PopupWindow({ title, children, onClose, onMinimizeStart,
     gesture.current = { kind, pointerId: event.pointerId, clientX: event.clientX, clientY: event.clientY, position: start, size: currentSize };
     setPosition(start);
     setSize(currentSize);
+    if (kind === "move") {
+      element.style.left = `${start.x}px`;
+      element.style.top = `${start.y}px`;
+      element.style.willChange = "transform";
+      element.style.transform = "translate3d(0, 0, 0)";
+    }
     const target = event.currentTarget;
     target.setPointerCapture(event.pointerId);
     event.preventDefault();
 
     stopListening.current?.();
+    const draggedPosition = (pointer: globalThis.PointerEvent, current: Gesture) => clampPosition({
+      x: current.position.x + (pointer.clientX - current.clientX) / scale,
+      y: current.position.y + (pointer.clientY - current.clientY) / scale,
+    }, current.size);
     const move = (pointer: globalThis.PointerEvent) => {
       const current = gesture.current;
       if (current?.pointerId !== pointer.pointerId) return;
-      const dx = (pointer.clientX - current.clientX) / scale;
-      const dy = (pointer.clientY - current.clientY) / scale;
-      if (current.kind === "move") setPosition(clampPosition({ x: current.position.x + dx, y: current.position.y + dy }, current.size));
-      else {
+      if (current.kind === "move") {
+        const next = draggedPosition(pointer, current);
+        element.style.transform = `translate3d(${next.x - current.position.x}px, ${next.y - current.position.y}px, 0)`;
+      } else {
+        const dx = (pointer.clientX - current.clientX) / scale;
+        const dy = (pointer.clientY - current.clientY) / scale;
         setSize(clampSize({ width: current.size.width + dx, height: current.size.height + dy }, current.position));
         if (!resizable) setPreviewResizing(true);
       }
@@ -207,6 +219,14 @@ export default function PopupWindow({ title, children, onClose, onMinimizeStart,
       if (current?.pointerId !== pointer.pointerId) return;
       gesture.current = null;
       stopListening.current?.();
+      if (current.kind === "move") {
+        const next = draggedPosition(pointer, current);
+        element.style.left = `${next.x}px`;
+        element.style.top = `${next.y}px`;
+        element.style.transform = "";
+        element.style.willChange = "";
+        setPosition(next);
+      }
       if (!resizable && current.kind === "resize") {
         setPreviewResizing(false);
         if (Math.abs(pointer.clientX - current.clientX) > 1 || Math.abs(pointer.clientY - current.clientY) > 1) {

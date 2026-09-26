@@ -44,6 +44,17 @@ function storedAutoHideNavbar(): boolean {
   }
 }
 
+function storedPopupTransparency(): number {
+  try {
+    const saved = localStorage.getItem("symphony-popup-transparency");
+    if (saved === null) return 50;
+    const value = Number(saved);
+    return Number.isInteger(value) && value >= 0 && value <= 100 ? value : 50;
+  } catch {
+    return 50;
+  }
+}
+
 function App() {
   const [theme, setTheme] = useState<"dark" | "light">(() => storedChoice("symphony-theme", ["dark", "light"], "dark"));
   const [accent, setAccent] = useState<Accent>(() => storedChoice("symphony-accent", accentChoices, "grey"));
@@ -61,6 +72,7 @@ function App() {
     catch { return null; }
   });
   const [glass, setGlass] = useState(() => storedChoice("symphony-glass", ["on", "off"], "on") === "on");
+  const [popupTransparency, setPopupTransparency] = useState(storedPopupTransparency);
   const [gradients, setGradients] = useState(() => storedChoice("symphony-gradients", ["on", "off"], "on") === "on");
   const [autoHideNavbar, setAutoHideNavbar] = useState(storedAutoHideNavbar);
   const [uiScale, setUiScale] = useState(storedUiScale);
@@ -97,6 +109,10 @@ function App() {
   useLayoutEffect(() => {
     document.documentElement.dataset.navbarAutoHide = autoHideNavbar ? "on" : "off";
   }, [autoHideNavbar]);
+
+  useLayoutEffect(() => {
+    document.documentElement.style.setProperty("--popup-background-opacity", `${100 - popupTransparency}%`);
+  }, [popupTransparency]);
 
   useLayoutEffect(() => {
     const target: [number, number, number] = [1, 3, 5].map((index) => parseInt(color.slice(index, index + 2), 16)) as [number, number, number];
@@ -138,6 +154,7 @@ function App() {
       if (selectedProfileId) localStorage.setItem("symphony-selected-color-profile", selectedProfileId);
       else localStorage.removeItem("symphony-selected-color-profile");
       localStorage.setItem("symphony-glass", glass ? "on" : "off");
+      localStorage.setItem("symphony-popup-transparency", String(popupTransparency));
       localStorage.setItem("symphony-gradients", gradients ? "on" : "off");
       localStorage.setItem("symphony-auto-hide-navbar", autoHideNavbar ? "on" : "off");
       localStorage.removeItem("symphony-app-navbar");
@@ -145,7 +162,7 @@ function App() {
     } catch {
       // Appearance settings still work for this session.
     }
-  }, [accent, color, customColor, savedProfiles, selectedProfileId, glass, gradients, autoHideNavbar, uiScale]);
+  }, [accent, color, customColor, savedProfiles, selectedProfileId, glass, popupTransparency, gradients, autoHideNavbar, uiScale]);
 
   function selectPreset(choice: Accent) {
     setAccent(choice);
@@ -187,10 +204,9 @@ function App() {
   const [activeTab, setActiveTab] = useState<WorkspaceTab>("code");
   const [isAppearanceWindowOpen, setIsAppearanceWindowOpen] = useState(false);
   const [isAppearanceWindowMinimized, setIsAppearanceWindowMinimized] = useState(false);
-  const [isAppearanceWindowMinimizing, setIsAppearanceWindowMinimizing] = useState(false);
   const [isAboutWindowOpen, setIsAboutWindowOpen] = useState(false);
   const [isAboutWindowMinimized, setIsAboutWindowMinimized] = useState(false);
-  const [isAboutWindowMinimizing, setIsAboutWindowMinimizing] = useState(false);
+  const [minimizedWindows, setMinimizedWindows] = useState<Array<{ id: string; title: string }>>([]);
   const [panelWidth, setPanelWidth] = useState<number | null>(null);
   const [isResizing, setIsResizing] = useState(false);
   const appContent = useRef<HTMLElement>(null);
@@ -237,16 +253,24 @@ function App() {
     setTheme((current) => current === "dark" ? "light" : "dark");
   }
 
+  function addMinimizedWindow(id: string, title: string) {
+    setMinimizedWindows((current) => [...current.filter((window) => window.id !== id), { id, title }]);
+  }
+
+  function removeMinimizedWindow(id: string) {
+    setMinimizedWindows((current) => current.filter((window) => window.id !== id));
+  }
+
   function openAppearanceWindow() {
     setIsAppearanceWindowMinimized(false);
-    setIsAppearanceWindowMinimizing(false);
+    removeMinimizedWindow("appearance");
     setIsAppearanceWindowOpen(true);
     requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('[data-popup-id="appearance"] .close-control')?.focus());
   }
 
   function openAboutWindow() {
     setIsAboutWindowMinimized(false);
-    setIsAboutWindowMinimizing(false);
+    removeMinimizedWindow("about");
     setIsAboutWindowOpen(true);
     requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('[data-popup-id="about"] .close-control')?.focus());
   }
@@ -280,44 +304,41 @@ function App() {
   }, []);
 
   function minimizeAppearanceWindow() {
-    setIsAppearanceWindowMinimizing(false);
     setIsAppearanceWindowMinimized(true);
   }
 
   function startMinimizingAppearanceWindow() {
-    setIsAppearanceWindowMinimizing(true);
+    addMinimizedWindow("appearance", "Appearance");
   }
 
   function minimizeAboutWindow() {
-    setIsAboutWindowMinimizing(false);
     setIsAboutWindowMinimized(true);
   }
 
   function startMinimizingAboutWindow() {
-    setIsAboutWindowMinimizing(true);
+    addMinimizedWindow("about", "About Symphony IDE");
   }
 
   function restoreWindow(id: string) {
+    removeMinimizedWindow(id);
     if (id === "appearance") {
       setIsAppearanceWindowMinimized(false);
-      setIsAppearanceWindowMinimizing(false);
     }
     if (id === "about") {
       setIsAboutWindowMinimized(false);
-      setIsAboutWindowMinimizing(false);
     }
   }
 
   function closeAppearanceWindow() {
     setIsAppearanceWindowMinimized(false);
-    setIsAppearanceWindowMinimizing(false);
+    removeMinimizedWindow("appearance");
     setIsAppearanceWindowOpen(false);
     requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('[aria-controls="window-dropdown"]')?.focus());
   }
 
   function closeAboutWindow() {
     setIsAboutWindowMinimized(false);
-    setIsAboutWindowMinimizing(false);
+    removeMinimizedWindow("about");
     setIsAboutWindowOpen(false);
     requestAnimationFrame(() => document.querySelector<HTMLButtonElement>(".about-menu-button")?.focus());
   }
@@ -371,7 +392,8 @@ function App() {
     accent, onAccentChange: selectPreset, color, onColorChange: chooseColor,
     savedProfiles, selectedProfileId, onProfileSelect: selectProfile,
     onProfileSave: saveProfile, onProfileDelete: deleteProfile,
-    glass, onGlassChange: setGlass, gradients, onGradientsChange: setGradients,
+    glass, onGlassChange: setGlass, popupTransparency, onPopupTransparencyChange: setPopupTransparency,
+    gradients, onGradientsChange: setGradients,
     autoHideNavbar, onAutoHideNavbarChange: setAutoHideNavbar,
     uiScale, onUiScaleChange: setUiScale,
   };
@@ -381,10 +403,7 @@ function App() {
       <Navbar isFullscreen={isFullscreen} autoHideNavbar={autoHideNavbar} onFullscreenChange={setIsFullscreen}
         onAboutOpen={openAboutWindow}
         onAppearanceOpen={openAppearanceWindow}
-        minimizedWindows={[
-          ...(isAppearanceWindowMinimized || isAppearanceWindowMinimizing ? [{ id: "appearance", title: "Appearance" }] : []),
-          ...(isAboutWindowMinimized || isAboutWindowMinimizing ? [{ id: "about", title: "About Symphony IDE" }] : []),
-        ]}
+        minimizedWindows={minimizedWindows}
         onWindowRestore={restoreWindow} uiScale={uiScale} />
       <WorkspaceTabs activeTab={activeTab} uiScale={uiScale} onSelect={(tab) => {
         setActiveTab(tab);

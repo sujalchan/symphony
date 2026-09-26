@@ -80,7 +80,7 @@
 }
 
 :root[data-glass="on"] .popup-window.is-focused {
-  background: color-mix(in srgb, var(--menu-bg) 50%, transparent);
+  background: color-mix(in srgb, var(--menu-bg) var(--popup-background-opacity), transparent);
   -webkit-backdrop-filter: blur(4px) saturate(125%);
   backdrop-filter: blur(4px) saturate(125%);
 }
@@ -108,6 +108,8 @@
   font-weight: 600;
   cursor: grab;
   touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
   transition: background 180ms ease, color 180ms ease;
 }
 
@@ -117,6 +119,16 @@
   -webkit-backdrop-filter: var(--chrome-filter);
   backdrop-filter: var(--chrome-filter);
   color: var(--text-strong);
+}
+
+:root[data-glass="on"] .popup-window.is-focused .popup-window-header {
+  background:
+    radial-gradient(ellipse 80% 150% at 18% -35%, color-mix(in srgb, var(--navbar-glow) var(--popup-background-opacity), transparent), transparent 85%),
+    linear-gradient(115deg, color-mix(in srgb, rgba(255, 255, 255, 0.07) var(--popup-background-opacity), transparent), transparent 65%);
+}
+
+:root[data-glass="on"][data-gradients="off"] .popup-window.is-focused .popup-window-header {
+  background: transparent;
 }
 
 .popup-window-header:active {

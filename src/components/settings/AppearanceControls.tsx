@@ -1,4 +1,5 @@
 import ColorThemeSettings from "./ColorThemeSettings";
+import PopupTransparencySetting from "./PopupTransparencySetting";
 import UiScaleSetting from "./UiScaleSetting";
 import type { AppearanceSettingsProps } from "./AppearanceSettings";
 
@@ -16,6 +17,7 @@ export default function AppearanceControls(props: AppearanceSettingsProps) {
         <span>Glass surfaces</span>
         <input type="checkbox" checked={props.glass} onChange={(event) => props.onGlassChange(event.target.checked)} />
       </label>
+      <PopupTransparencySetting value={props.popupTransparency} onChange={props.onPopupTransparencyChange} glass={props.glass} />
       <label className="settings-option settings-toggle">
         <span>Gradients and glow</span>
         <input type="checkbox" checked={props.gradients} onChange={(event) => props.onGradientsChange(event.target.checked)} />

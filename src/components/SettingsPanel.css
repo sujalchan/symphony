@@ -331,6 +331,36 @@
   cursor: pointer;
 }
 
+.popup-transparency-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.popup-transparency-heading output {
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.popup-transparency-setting input[type="range"] {
+  width: 100%;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.popup-transparency-setting input[type="range"]:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.popup-transparency-hint {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .appearance-toggle svg,
   .appearance-settings-content {
